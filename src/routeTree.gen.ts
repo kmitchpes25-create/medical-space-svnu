@@ -9,38 +9,174 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAppQuizRouteImport } from './routes/_authenticated/app.quiz'
+import { Route as AuthenticatedAppHistoryRouteImport } from './routes/_authenticated/app.history'
+import { Route as AuthenticatedAppFavoritesRouteImport } from './routes/_authenticated/app.favorites'
+import { Route as AuthenticatedAppSubjectSubjectIdRouteImport } from './routes/_authenticated/app.subject.$subjectId'
+import { Route as AuthenticatedAppResultAttemptIdRouteImport } from './routes/_authenticated/app.result.$attemptId'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
+  id: '/app/',
+  path: '/app/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAppQuizRoute = AuthenticatedAppQuizRouteImport.update({
+  id: '/app/quiz',
+  path: '/app/quiz',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAppHistoryRoute = AuthenticatedAppHistoryRouteImport.update({
+  id: '/app/history',
+  path: '/app/history',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAppFavoritesRoute =
+  AuthenticatedAppFavoritesRouteImport.update({
+    id: '/app/favorites',
+    path: '/app/favorites',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAppSubjectSubjectIdRoute =
+  AuthenticatedAppSubjectSubjectIdRouteImport.update({
+    id: '/app/subject/$subjectId',
+    path: '/app/subject/$subjectId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAppResultAttemptIdRoute =
+  AuthenticatedAppResultAttemptIdRouteImport.update({
+    id: '/app/result/$attemptId',
+    path: '/app/result/$attemptId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/app/favorites': typeof AuthenticatedAppFavoritesRoute
+  '/app/history': typeof AuthenticatedAppHistoryRoute
+  '/app/quiz': typeof AuthenticatedAppQuizRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/app/': typeof AuthenticatedAppIndexRoute
+  '/app/result/$attemptId': typeof AuthenticatedAppResultAttemptIdRoute
+  '/app/subject/$subjectId': typeof AuthenticatedAppSubjectSubjectIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/app/favorites': typeof AuthenticatedAppFavoritesRoute
+  '/app/history': typeof AuthenticatedAppHistoryRoute
+  '/app/quiz': typeof AuthenticatedAppQuizRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/app': typeof AuthenticatedAppIndexRoute
+  '/app/result/$attemptId': typeof AuthenticatedAppResultAttemptIdRoute
+  '/app/subject/$subjectId': typeof AuthenticatedAppSubjectSubjectIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/_authenticated/app/favorites': typeof AuthenticatedAppFavoritesRoute
+  '/_authenticated/app/history': typeof AuthenticatedAppHistoryRoute
+  '/_authenticated/app/quiz': typeof AuthenticatedAppQuizRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
+  '/_authenticated/app/result/$attemptId': typeof AuthenticatedAppResultAttemptIdRoute
+  '/_authenticated/app/subject/$subjectId': typeof AuthenticatedAppSubjectSubjectIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/app/favorites'
+    | '/app/history'
+    | '/app/quiz'
+    | '/admin/'
+    | '/app/'
+    | '/app/result/$attemptId'
+    | '/app/subject/$subjectId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/app/favorites'
+    | '/app/history'
+    | '/app/quiz'
+    | '/admin'
+    | '/app'
+    | '/app/result/$attemptId'
+    | '/app/subject/$subjectId'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/admin'
+    | '/_authenticated/app/favorites'
+    | '/_authenticated/app/history'
+    | '/_authenticated/app/quiz'
+    | '/_authenticated/admin/'
+    | '/_authenticated/app/'
+    | '/_authenticated/app/result/$attemptId'
+    | '/_authenticated/app/subject/$subjectId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +184,106 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/': {
+      id: '/_authenticated/app/'
+      path: '/app'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/app/quiz': {
+      id: '/_authenticated/app/quiz'
+      path: '/app/quiz'
+      fullPath: '/app/quiz'
+      preLoaderRoute: typeof AuthenticatedAppQuizRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/history': {
+      id: '/_authenticated/app/history'
+      path: '/app/history'
+      fullPath: '/app/history'
+      preLoaderRoute: typeof AuthenticatedAppHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/favorites': {
+      id: '/_authenticated/app/favorites'
+      path: '/app/favorites'
+      fullPath: '/app/favorites'
+      preLoaderRoute: typeof AuthenticatedAppFavoritesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/subject/$subjectId': {
+      id: '/_authenticated/app/subject/$subjectId'
+      path: '/app/subject/$subjectId'
+      fullPath: '/app/subject/$subjectId'
+      preLoaderRoute: typeof AuthenticatedAppSubjectSubjectIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/result/$attemptId': {
+      id: '/_authenticated/app/result/$attemptId'
+      path: '/app/result/$attemptId'
+      fullPath: '/app/result/$attemptId'
+      preLoaderRoute: typeof AuthenticatedAppResultAttemptIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
+  AuthenticatedAppFavoritesRoute: typeof AuthenticatedAppFavoritesRoute
+  AuthenticatedAppHistoryRoute: typeof AuthenticatedAppHistoryRoute
+  AuthenticatedAppQuizRoute: typeof AuthenticatedAppQuizRoute
+  AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+  AuthenticatedAppResultAttemptIdRoute: typeof AuthenticatedAppResultAttemptIdRoute
+  AuthenticatedAppSubjectSubjectIdRoute: typeof AuthenticatedAppSubjectSubjectIdRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
+  AuthenticatedAppFavoritesRoute: AuthenticatedAppFavoritesRoute,
+  AuthenticatedAppHistoryRoute: AuthenticatedAppHistoryRoute,
+  AuthenticatedAppQuizRoute: AuthenticatedAppQuizRoute,
+  AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+  AuthenticatedAppResultAttemptIdRoute: AuthenticatedAppResultAttemptIdRoute,
+  AuthenticatedAppSubjectSubjectIdRoute: AuthenticatedAppSubjectSubjectIdRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
