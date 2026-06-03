@@ -55,10 +55,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Medical Space — منصة طلاب الطب البشري" },
+      { title: "Medical SPACE - SVNU" },
       { name: "description", content: "منصة تعليمية متكاملة لطلاب الطب: بنك أسئلة، اختبارات، فورماتيف، سنوات سابقة، وأكثر." },
-      { property: "og:title", content: "Medical Space — منصة طلاب الطب البشري" },
-      { name: "twitter:title", content: "Medical Space — منصة طلاب الطب البشري" },
+      { property: "og:title", content: "Medical SPACE - SVNU" },
+      { name: "twitter:title", content: "Medical SPACE - SVNU" },
       { property: "og:description", content: "منصة تعليمية متكاملة لطلاب الطب: بنك أسئلة، اختبارات، فورماتيف، سنوات سابقة، وأكثر." },
       { name: "twitter:description", content: "منصة تعليمية متكاملة لطلاب الطب: بنك أسئلة، اختبارات، فورماتيف، سنوات سابقة، وأكثر." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/212f18c7-853f-42ea-b0b9-57b03230eaa6/id-preview-13d9818c--48cc7396-e749-478b-befb-04caadba62dc.lovable.app-1780505736140.png" },
