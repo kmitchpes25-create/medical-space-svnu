@@ -35,7 +35,7 @@ function SubjectPage() {
 
   const startQuiz = async (filters: { source_kind?: string; chapter_id?: string; lecture_id?: string }) => {
     let q = supabase.from("questions").select("id").eq("subject_id", subjectId);
-    if (filters.source_kind) q = q.eq("source_kind", filters.source_kind);
+    if (filters.source_kind) q = q.eq("source_kind", filters.source_kind as any);
     if (filters.chapter_id) q = q.eq("chapter_id", filters.chapter_id);
     if (filters.lecture_id) q = q.eq("lecture_id", filters.lecture_id);
     const { data } = await q.limit(50);
