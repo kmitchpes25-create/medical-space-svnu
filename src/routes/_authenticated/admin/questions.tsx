@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin-shell";
@@ -54,36 +54,36 @@ function QuestionsAdmin() {
   });
 
   const remove = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا السؤال؟")) return;
+    if (!confirm("Are you sure you want to delete this question?")) return;
     const { error } = await supabase.from("questions").delete().eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success("تم الحذف"); qc.invalidateQueries({ queryKey: ["admin_questions"] }); }
+    else { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["admin_questions"] }); }
   };
 
   return (
     <AdminShell>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">إدارة الأسئلة</h1>
+        <h1 className="text-3xl font-bold">Questions</h1>
         <button onClick={() => setCreating(true)} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-          <Plus className="h-4 w-4" /> إضافة سؤال
+          <Plus className="h-4 w-4" /> Add question
         </button>
       </div>
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <select value={subjectId} onChange={(e) => { setSubjectId(e.target.value); setChapterId(""); setLectureId(""); }} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
-          <option value="">كل المواد</option>
-          {subjects?.map((s: any) => <option key={s.id} value={s.id}>{s.name_ar || s.name}</option>)}
+          <option value="">All subjects</option>
+          {subjects?.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
         <select value={chapterId} onChange={(e) => { setChapterId(e.target.value); setLectureId(""); }} disabled={!subjectId} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
-          <option value="">كل الشابترز</option>
-          {chapters?.map((c: any) => <option key={c.id} value={c.id}>{c.name_ar || c.name}</option>)}
+          <option value="">All chapters</option>
+          {chapters?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <select value={lectureId} onChange={(e) => setLectureId(e.target.value)} disabled={!chapterId} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
-          <option value="">كل المحاضرات</option>
-          {lectures?.map((l: any) => <option key={l.id} value={l.id}>{l.name_ar || l.name}</option>)}
+          <option value="">All lectures</option>
+          {lectures?.map((l: any) => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
         <select value={sourceKind} onChange={(e) => setSourceKind(e.target.value)} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
-          <option value="">كل الأقسام</option>
+          <option value="">All sections</option>
           {SOURCE_KINDS.map(k => <option key={k} value={k}>{k}</option>)}
         </select>
       </div>
@@ -116,7 +116,7 @@ function QuestionsAdmin() {
               </div>
             </div>
           ))}
-          {questions?.length === 0 && <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">لا توجد أسئلة. أضف سؤالاً جديداً.</p>}
+          {questions?.length === 0 && <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No questions. Add a new one.</p>}
         </div>
       )}
 
@@ -160,8 +160,8 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
   });
 
   const save = async () => {
-    if (!text.trim() || !subjectId) { toast.error("املأ نص السؤال واختر مادة"); return; }
-    if (!choices.some(c => c.is_correct)) { toast.error("حدد إجابة صحيحة واحدة على الأقل"); return; }
+    if (!text.trim() || !subjectId) { toast.error("Fill the question text and pick a subject"); return; }
+    if (!choices.some(c => c.is_correct)) { toast.error("Mark at least one correct answer"); return; }
     setSaving(true);
     try {
       const payload: any = {
@@ -186,7 +186,7 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
       }));
       const { error: cErr } = await supabase.from("choices").insert(rows);
       if (cErr) throw cErr;
-      toast.success("تم الحفظ");
+      toast.success("Saved");
       onSaved();
     } catch (e: any) { toast.error(e.message); }
     finally { setSaving(false); }
@@ -195,20 +195,20 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/60 p-4" onClick={onClose}>
       <div className="my-8 w-full max-w-2xl rounded-2xl border border-border bg-card p-6 shadow-elegant" onClick={(e) => e.stopPropagation()}>
-        <h3 className="mb-4 text-lg font-bold">{initial ? "تعديل السؤال" : "إضافة سؤال جديد"}</h3>
+        <h3 className="mb-4 text-lg font-bold">{initial ? "Edit question" : "Add new question"}</h3>
         <div className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <select value={subjectId} onChange={(e)=>{setSubjectId(e.target.value);setChapterId("");setLectureId("");}} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
-              <option value="">اختر المادة *</option>
-              {subjects.map((s: any) => <option key={s.id} value={s.id}>{s.name_ar || s.name}</option>)}
+              <option value="">Select subject *</option>
+              {subjects.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
             <select value={chapterId} onChange={(e)=>{setChapterId(e.target.value);setLectureId("");}} disabled={!subjectId} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
-              <option value="">الشابتر (اختياري)</option>
-              {chapters?.map((c: any) => <option key={c.id} value={c.id}>{c.name_ar || c.name}</option>)}
+              <option value="">Chapter (optional)</option>
+              {chapters?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <select value={lectureId} onChange={(e)=>setLectureId(e.target.value)} disabled={!chapterId} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
-              <option value="">المحاضرة (اختياري)</option>
-              {lectures?.map((l: any) => <option key={l.id} value={l.id}>{l.name_ar || l.name}</option>)}
+              <option value="">Lecture (optional)</option>
+              {lectures?.map((l: any) => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
             <select value={sourceKind} onChange={(e)=>setSourceKind(e.target.value)} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
               {SOURCE_KINDS.map(k => <option key={k} value={k}>{k}</option>)}
@@ -219,15 +219,15 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
               <option value="multiple_answers">Multiple Answers</option>
               <option value="clinical_case">Clinical Case</option>
             </select>
-            <input placeholder="سنة الامتحان (للسنوات السابقة)" type="number" value={examYear} onChange={(e)=>setExamYear(e.target.value)} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
+            <input placeholder="Exam year (for previous years)" type="number" value={examYear} onChange={(e)=>setExamYear(e.target.value)} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
           </div>
-          <textarea placeholder="نص السؤال *" value={text} onChange={(e)=>setText(e.target.value)} rows={3} className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
-          <textarea placeholder="شرح الإجابة (اختياري)" value={explanation} onChange={(e)=>setExplanation(e.target.value)} rows={2} className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
+          <textarea placeholder="Question text *" value={text} onChange={(e)=>setText(e.target.value)} rows={3} className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
+          <textarea placeholder="Explanation (optional)" value={explanation} onChange={(e)=>setExplanation(e.target.value)} rows={2} className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label className="text-sm font-medium">الاختيارات</label>
-              <button onClick={() => setChoices([...choices, { text: "", is_correct: false }])} className="text-xs text-primary">+ إضافة اختيار</button>
+              <label className="text-sm font-medium">Choices</label>
+              <button onClick={() => setChoices([...choices, { text: "", is_correct: false }])} className="text-xs text-primary">+ Add choice</button>
             </div>
             {choices.map((c, i) => (
               <div key={i} className="mb-2 flex items-center gap-2">
@@ -236,16 +236,16 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
                   next[i].is_correct = e.target.checked;
                   setChoices(next);
                 }} className="h-4 w-4 accent-primary" />
-                <input value={c.text} onChange={(e) => { const n = [...choices]; n[i].text = e.target.value; setChoices(n); }} placeholder={`اختيار ${i+1}`} className="flex-1 rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
+                <input value={c.text} onChange={(e) => { const n = [...choices]; n[i].text = e.target.value; setChoices(n); }} placeholder={`Choice ${i+1}`} className="flex-1 rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
                 <button onClick={() => setChoices(choices.filter((_, x) => x !== i))} className="text-destructive"><Trash2 className="h-4 w-4" /></button>
               </div>
             ))}
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm">إلغاء</button>
+          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm">Cancel</button>
           <button onClick={save} disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">
-            {saving ? "..." : "حفظ"}
+            {saving ? "..." : "Save"}
           </button>
         </div>
       </div>

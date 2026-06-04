@@ -44,7 +44,7 @@ function QuizPage() {
   });
 
   if (!questions) return <AppShell><div className="grid h-64 place-items-center"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div></AppShell>;
-  if (!questions.length) return <AppShell><p>لا توجد أسئلة.</p></AppShell>;
+  if (!questions.length) return <AppShell><p>No questions.</p></AppShell>;
 
   const q = questions[idx];
   const selected = answers[q.id] || [];
@@ -81,7 +81,7 @@ function QuizPage() {
 
       const { data: attempt, error } = await supabase.from("exam_attempts").insert({
         user_id: u.user.id,
-        title: meta?.title || "اختبار",
+        title: meta?.title || "Quiz",
         scope: meta,
         total_questions: total,
         correct_count: correctCount,
@@ -105,10 +105,10 @@ function QuizPage() {
     <AppShell>
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground">{meta?.title || "اختبار"}</p>
-          <h1 className="text-xl font-bold">السؤال {idx + 1} من {questions.length}</h1>
+          <p className="text-xs text-muted-foreground">{meta?.title || "Quiz"}</p>
+          <h1 className="text-xl font-bold">Question {idx + 1} of {questions.length}</h1>
         </div>
-        <div className="text-sm text-muted-foreground">{Object.keys(answers).length} / {questions.length} مُجاب</div>
+        <div className="text-sm text-muted-foreground">{Object.keys(answers).length} / {questions.length} answered</div>
       </div>
 
       <div className="mb-4 h-1.5 rounded-full bg-muted">
@@ -124,7 +124,7 @@ function QuizPage() {
               <button
                 key={c.id}
                 onClick={() => toggle(c.id)}
-                className={`flex w-full items-center gap-3 rounded-xl border p-4 text-right transition ${isSel ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-accent"}`}
+                className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${isSel ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-accent"}`}
               >
                 <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border text-xs font-semibold ${isSel ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>
                   {String.fromCharCode(65 + i)}
@@ -143,14 +143,14 @@ function QuizPage() {
           disabled={idx === 0}
           className="flex items-center gap-1 rounded-lg border border-border bg-card px-4 py-2 text-sm disabled:opacity-40"
         >
-          <ChevronRight className="h-4 w-4" /> السابق
+          <ChevronLeft className="h-4 w-4" /> Previous
         </button>
         {idx < questions.length - 1 ? (
           <button
             onClick={() => setIdx(i => i + 1)}
             className="flex items-center gap-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
           >
-            التالي <ChevronLeft className="h-4 w-4" />
+            Next <ChevronRight className="h-4 w-4" />
           </button>
         ) : (
           <button
@@ -158,7 +158,7 @@ function QuizPage() {
             disabled={submitting}
             className="rounded-lg bg-success px-6 py-2 text-sm font-semibold text-success-foreground disabled:opacity-50"
           >
-            {submitting ? "..." : "إنهاء الاختبار"}
+            {submitting ? "..." : "Submit exam"}
           </button>
         )}
       </div>

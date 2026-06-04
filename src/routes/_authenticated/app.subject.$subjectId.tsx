@@ -9,11 +9,11 @@ export const Route = createFileRoute("/_authenticated/app/subject/$subjectId")({
 });
 
 const sectionCards = [
-  { kind: "question_bank", label: "بنك الأسئلة", icon: FileQuestion, color: "text-primary" },
+  { kind: "question_bank", label: "Question Bank", icon: FileQuestion, color: "text-primary" },
   { kind: "formative", label: "Formative", icon: Brain, color: "text-warning" },
-  { kind: "previous_years", label: "السنوات السابقة", icon: HistoryIcon, color: "text-success" },
+  { kind: "previous_years", label: "Previous Years", icon: HistoryIcon, color: "text-success" },
   { kind: "mock_exam", label: "Mock Exams", icon: ClipboardCheck, color: "text-primary" },
-  { kind: "revision", label: "مراجعة", icon: Star, color: "text-warning" },
+  { kind: "revision", label: "Revision", icon: Star, color: "text-warning" },
   { kind: "practical", label: "Practical", icon: BookOpen, color: "text-success" },
   { kind: "spotters", label: "Spotters", icon: BookOpen, color: "text-primary" },
   { kind: "ospe", label: "OSPE", icon: BookOpen, color: "text-warning" },
@@ -38,32 +38,34 @@ function SubjectPage() {
     if (filters.source_kind) q = q.eq("source_kind", filters.source_kind as any);
     if (filters.chapter_id) q = q.eq("chapter_id", filters.chapter_id);
     if (filters.lecture_id) q = q.eq("lecture_id", filters.lecture_id);
-    const { data } = await q.limit(50);
+    const { data } = await q.limit(200);
     const ids = (data || []).map((x) => x.id);
     if (!ids.length) {
-      alert("لا توجد أسئلة بعد في هذا القسم.");
+      alert("No questions yet in this section.");
       return;
     }
+    // Shuffle for randomness
+    ids.sort(() => Math.random() - 0.5);
     sessionStorage.setItem("quiz_ids", JSON.stringify(ids));
-    sessionStorage.setItem("quiz_meta", JSON.stringify({ subjectId, ...filters, title: subject?.name_ar || subject?.name }));
+    sessionStorage.setItem("quiz_meta", JSON.stringify({ subjectId, ...filters, title: subject?.name }));
     navigate({ to: "/app/quiz" });
   };
 
   return (
     <AppShell>
       <div className="mb-6">
-        <Link to="/app" className="text-sm text-muted-foreground hover:text-foreground">← الرئيسية</Link>
-        <h1 className="mt-2 text-3xl font-bold">{subject?.name_ar || subject?.name || "..."}</h1>
+        <Link to="/app" className="text-sm text-muted-foreground hover:text-foreground">← Home</Link>
+        <h1 className="mt-2 text-3xl font-bold">{subject?.name || "..."}</h1>
         {subject?.description && <p className="mt-1 text-sm text-muted-foreground">{subject.description}</p>}
       </div>
 
-      <h2 className="mb-3 text-lg font-semibold">الأقسام التعليمية</h2>
+      <h2 className="mb-3 text-lg font-semibold">Sections</h2>
       <div className="mb-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {sectionCards.map((s) => (
           <button
             key={s.kind}
             onClick={() => startQuiz({ source_kind: s.kind })}
-            className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-right transition hover:border-primary/50"
+            className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition hover:border-primary/50"
           >
             <div className={`grid h-10 w-10 place-items-center rounded-lg bg-primary/10 ${s.color}`}>
               <s.icon className="h-5 w-5" />
@@ -73,32 +75,32 @@ function SubjectPage() {
         ))}
       </div>
 
-      <h2 className="mb-3 text-lg font-semibold">الشابترز والمحاضرات</h2>
+      <h2 className="mb-3 text-lg font-semibold">Chapters & Lectures</h2>
       <div className="space-y-3">
         {(subject?.chapters || []).sort((a: any, b: any) => a.order_index - b.order_index).map((ch: any) => (
           <details key={ch.id} className="rounded-xl border border-border bg-card">
             <summary className="flex cursor-pointer items-center justify-between p-4 font-medium">
-              <span>{ch.name_ar || ch.name}</span>
+              <span>{ch.name}</span>
               <button
                 onClick={(e) => { e.preventDefault(); startQuiz({ chapter_id: ch.id }); }}
                 className="rounded-md bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary hover:text-primary-foreground"
               >
-                اختبار الشابتر
+                Chapter exam
               </button>
             </summary>
             <div className="border-t border-border p-3">
               {(ch.lectures || []).length === 0 ? (
-                <p className="px-2 py-3 text-sm text-muted-foreground">لا توجد محاضرات بعد</p>
+                <p className="px-2 py-3 text-sm text-muted-foreground">No lectures yet</p>
               ) : (
                 <ul className="space-y-1">
                   {ch.lectures.sort((a: any, b: any) => a.order_index - b.order_index).map((lec: any) => (
                     <li key={lec.id} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-accent">
-                      <span className="text-sm">{lec.name_ar || lec.name}</span>
+                      <span className="text-sm">{lec.name}</span>
                       <button
                         onClick={() => startQuiz({ lecture_id: lec.id })}
                         className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
                       >
-                        ابدأ Quiz
+                        Start quiz
                       </button>
                     </li>
                   ))}
@@ -108,7 +110,7 @@ function SubjectPage() {
           </details>
         ))}
         {!(subject?.chapters || []).length && (
-          <p className="text-sm text-muted-foreground">لا توجد شابترز بعد.</p>
+          <p className="text-sm text-muted-foreground">No chapters yet.</p>
         )}
       </div>
     </AppShell>

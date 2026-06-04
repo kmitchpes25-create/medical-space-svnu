@@ -17,16 +17,16 @@ function HistoryPage() {
   });
   return (
     <AppShell>
-      <h1 className="mb-6 text-3xl font-bold">نتائجي</h1>
+      <h1 className="mb-6 text-3xl font-bold">My results</h1>
       <div className="space-y-2">
-        {data?.length === 0 && <p className="text-sm text-muted-foreground">لم تقم بأي اختبار بعد.</p>}
+        {data?.length === 0 && <p className="text-sm text-muted-foreground">You haven't taken any exams yet.</p>}
         {data?.map((a: any) => (
           <Link key={a.id} to="/app/result/$attemptId" params={{ attemptId: a.id }} className="flex items-center justify-between rounded-xl border border-border bg-card p-4 transition hover:border-primary/50">
             <div>
               <div className="font-medium">{a.title}</div>
-              <div className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString("ar")}</div>
+              <div className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString("en")}</div>
             </div>
-            <div className="text-left">
+            <div className="text-right">
               <div className="text-lg font-bold text-primary">{a.score_percent?.toFixed(0)}%</div>
               <div className="text-xs text-muted-foreground">{a.correct_count}/{a.total_questions}</div>
             </div>

@@ -18,13 +18,12 @@ function UploadPage() {
     setUploading(true);
     try {
       const path = `uploads/${Date.now()}_${file.name}`;
-      // We try-and-create bucket usage; storage bucket needs to be created in Cloud separately
       const { error } = await supabase.storage.from("uploads").upload(path, file);
       if (error) throw error;
-      toast.success("تم رفع الملف بنجاح. استخراج الأسئلة بالذكاء الاصطناعي سيكون متاحاً في تحديث قادم.");
+      toast.success("File uploaded successfully. AI-powered question extraction will be available in a future update.");
       setFile(null);
     } catch (e: any) {
-      toast.error(e.message + " — تأكد من إنشاء bucket باسم uploads في Cloud.");
+      toast.error(e.message);
     } finally {
       setUploading(false);
     }
@@ -32,12 +31,12 @@ function UploadPage() {
 
   return (
     <AdminShell>
-      <h1 className="mb-2 text-3xl font-bold">رفع ملفات</h1>
-      <p className="mb-8 text-sm text-muted-foreground">ارفع PDF / DOCX / TXT لتخزين الملف. استخراج الأسئلة تلقائياً بالذكاء الاصطناعي يأتي في المرحلة الثانية.</p>
+      <h1 className="mb-2 text-3xl font-bold">Uploads</h1>
+      <p className="mb-8 text-sm text-muted-foreground">Upload PDF / DOCX / TXT to store the file. Automatic AI-powered question extraction is coming in phase two.</p>
 
       <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
         <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
-        <h3 className="mt-4 font-semibold">اختر ملفاً للرفع</h3>
+        <h3 className="mt-4 font-semibold">Pick a file to upload</h3>
         <p className="text-xs text-muted-foreground">PDF, DOCX, TXT, JSON</p>
         <input
           type="file"
@@ -56,17 +55,17 @@ function UploadPage() {
             onClick={upload}
             className="rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
-            {uploading ? "جاري الرفع..." : "رفع الملف"}
+            {uploading ? "Uploading..." : "Upload file"}
           </button>
         </div>
       </div>
 
       <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
         <div className="flex items-center gap-2 font-semibold text-primary">
-          <Sparkles className="h-4 w-4" /> استخراج الأسئلة بالذكاء الاصطناعي
+          <Sparkles className="h-4 w-4" /> AI-powered question extraction
         </div>
         <p className="mt-1 text-muted-foreground">
-          الاستخراج التلقائي للأسئلة من ملفات PDF/DOCX باستخدام Lovable AI سيُفعّل في المرحلة الثانية. حالياً يمكنك إضافة الأسئلة يدوياً من صفحة <strong>إدارة الأسئلة</strong>.
+          Automatic extraction of questions from PDF/DOCX files using AI is coming in phase two. For now, you can add questions manually from the <strong>Questions</strong> page.
         </p>
       </div>
     </AdminShell>

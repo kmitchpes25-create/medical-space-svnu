@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
-import { BookOpen, ChevronLeft } from "lucide-react";
+import { BookOpen, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: AppHome,
@@ -24,8 +24,8 @@ function AppHome() {
   return (
     <AppShell>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">مرحباً بك في Medical Space</h1>
-        <p className="mt-1 text-sm text-muted-foreground">اختر السنة الدراسية للبدء</p>
+        <h1 className="text-3xl font-bold">Welcome to Medical Space</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Pick an academic year to get started</p>
       </div>
 
       {isLoading ? (
@@ -36,7 +36,7 @@ function AppHome() {
         <div className="space-y-8">
           {years?.map((y: any) => (
             <section key={y.id}>
-              <h2 className="mb-3 text-lg font-semibold">{y.name_ar || y.name}</h2>
+              <h2 className="mb-3 text-lg font-semibold">{y.name}</h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {(y.semesters || []).flatMap((s: any) =>
                   (s.subjects || []).map((sub: any) => (
@@ -50,15 +50,15 @@ function AppHome() {
                         <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary">
                           <BookOpen className="h-5 w-5" />
                         </div>
-                        <ChevronLeft className="h-4 w-4 text-muted-foreground transition group-hover:-translate-x-1 group-hover:text-primary" />
+                        <ChevronRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
                       </div>
-                      <h3 className="font-semibold">{sub.name_ar || sub.name}</h3>
-                      <p className="mt-1 text-xs text-muted-foreground">{s.name_ar || s.name}</p>
+                      <h3 className="font-semibold">{sub.name}</h3>
+                      <p className="mt-1 text-xs text-muted-foreground">{s.name}</p>
                     </Link>
                   ))
                 )}
                 {(y.semesters || []).every((s: any) => !s.subjects?.length) && (
-                  <p className="text-sm text-muted-foreground">لا توجد مواد بعد. يستطيع المسؤول إضافة المواد من لوحة الإدارة.</p>
+                  <p className="text-sm text-muted-foreground">No subjects yet. An admin can add subjects from the admin panel.</p>
                 )}
               </div>
             </section>

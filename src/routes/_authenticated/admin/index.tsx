@@ -38,36 +38,36 @@ function AdminHome() {
 
   return (
     <AdminShell>
-      <h1 className="mb-2 text-3xl font-bold">لوحة الإدارة</h1>
-      <p className="mb-8 text-sm text-muted-foreground">إدارة كاملة لمنصة Medical Space</p>
+      <h1 className="mb-2 text-3xl font-bold">Admin dashboard</h1>
+      <p className="mb-8 text-sm text-muted-foreground">Full administration of Medical Space</p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="السنوات الدراسية" value={stats?.years} icon={Layers} />
-        <StatCard title="المواد" value={stats?.subjects} icon={BookOpen} />
-        <StatCard title="الأسئلة" value={stats?.questions} icon={FileQuestion} />
-        <StatCard title="المستخدمون" value={stats?.users} icon={Users} />
+        <StatCard title="Academic years" value={stats?.years} icon={Layers} />
+        <StatCard title="Subjects" value={stats?.subjects} icon={BookOpen} />
+        <StatCard title="Questions" value={stats?.questions} icon={FileQuestion} />
+        <StatCard title="Users" value={stats?.users} icon={Users} />
       </div>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Link to="/admin/content" className="group rounded-xl border border-border bg-card p-6 transition hover:border-primary/50">
           <Layers className="mb-3 h-6 w-6 text-primary" />
-          <h3 className="font-semibold">إدارة الهيكل الأكاديمي</h3>
-          <p className="mt-1 text-xs text-muted-foreground">السنوات، الترمات، المواد، الشابترز، المحاضرات</p>
+          <h3 className="font-semibold">Academic structure</h3>
+          <p className="mt-1 text-xs text-muted-foreground">Years, semesters, subjects, chapters, lectures</p>
         </Link>
         <Link to="/admin/questions" className="group rounded-xl border border-border bg-card p-6 transition hover:border-primary/50">
           <FileQuestion className="mb-3 h-6 w-6 text-primary" />
-          <h3 className="font-semibold">إدارة الأسئلة</h3>
-          <p className="mt-1 text-xs text-muted-foreground">إضافة، تعديل، وحذف الأسئلة</p>
+          <h3 className="font-semibold">Questions</h3>
+          <p className="mt-1 text-xs text-muted-foreground">Add, edit, and delete questions</p>
         </Link>
         <Link to="/admin/upload" className="group rounded-xl border border-border bg-card p-6 transition hover:border-primary/50">
           <Upload className="mb-3 h-6 w-6 text-primary" />
-          <h3 className="font-semibold">رفع ملفات</h3>
-          <p className="mt-1 text-xs text-muted-foreground">رفع PDF/DOCX لاستخراج الأسئلة</p>
+          <h3 className="font-semibold">Uploads</h3>
+          <p className="mt-1 text-xs text-muted-foreground">Upload PDF/DOCX to extract questions</p>
         </Link>
         <Link to="/admin/users" className="group rounded-xl border border-border bg-card p-6 transition hover:border-primary/50">
           <Users className="mb-3 h-6 w-6 text-primary" />
-          <h3 className="font-semibold">إدارة المستخدمين</h3>
-          <p className="mt-1 text-xs text-muted-foreground">منح/سحب صلاحيات وحظر المستخدمين</p>
+          <h3 className="font-semibold">Users</h3>
+          <p className="mt-1 text-xs text-muted-foreground">Grant/revoke admin and ban users</p>
         </Link>
       </div>
     </AdminShell>
