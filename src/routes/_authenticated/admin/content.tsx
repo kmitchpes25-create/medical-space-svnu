@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin-shell";
-import { Plus, Pencil, Trash2, ChevronLeft } from "lucide-react";
+import { Plus, Pencil, Trash2, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/content")({
@@ -13,16 +13,16 @@ export const Route = createFileRoute("/_authenticated/admin/content")({
 type Crumb = { kind: "years" | "year" | "semester" | "subject" | "chapter"; id?: string; label: string };
 
 function ContentManager() {
-  const [path, setPath] = useState<Crumb[]>([{ kind: "years", label: "السنوات الدراسية" }]);
+  const [path, setPath] = useState<Crumb[]>([{ kind: "years", label: "Academic years" }]);
   const current = path[path.length - 1];
 
   return (
     <AdminShell>
-      <h1 className="mb-2 text-3xl font-bold">إدارة المحتوى الأكاديمي</h1>
+      <h1 className="mb-2 text-3xl font-bold">Academic content</h1>
       <div className="mb-6 flex flex-wrap items-center gap-2 text-sm">
         {path.map((c, i) => (
           <span key={i} className="flex items-center gap-2">
-            {i > 0 && <ChevronLeft className="h-4 w-4 text-muted-foreground" />}
+            {i > 0 && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
             <button
               onClick={() => setPath(path.slice(0, i + 1))}
               className={`rounded px-2 py-1 ${i === path.length - 1 ? "bg-accent font-semibold" : "text-muted-foreground hover:text-foreground"}`}
@@ -35,58 +35,57 @@ function ContentManager() {
 
       {current.kind === "years" && (
         <List
-          title="السنوات الدراسية"
+          title="Academic years"
           table="academic_years"
-          fields={[{ key: "name_ar", label: "الاسم بالعربي" }, { key: "name", label: "الاسم بالإنجليزي" }, { key: "order_index", label: "الترتيب", type: "number" }]}
-          onOpen={(row) => setPath([...path, { kind: "year", id: row.id, label: row.name_ar || row.name }])}
+          fields={[{ key: "name", label: "Name" }, { key: "order_index", label: "Order", type: "number" }]}
+          onOpen={(row) => setPath([...path, { kind: "year", id: row.id, label: row.name }])}
         />
       )}
       {current.kind === "year" && current.id && (
         <List
-          title="الترمات"
+          title="Semesters"
           table="semesters"
           parentKey="year_id"
           parentId={current.id}
-          fields={[{ key: "name_ar", label: "الاسم بالعربي" }, { key: "name", label: "الاسم بالإنجليزي" }, { key: "order_index", label: "الترتيب", type: "number" }]}
-          onOpen={(row) => setPath([...path, { kind: "semester", id: row.id, label: row.name_ar || row.name }])}
+          fields={[{ key: "name", label: "Name" }, { key: "order_index", label: "Order", type: "number" }]}
+          onOpen={(row) => setPath([...path, { kind: "semester", id: row.id, label: row.name }])}
         />
       )}
       {current.kind === "semester" && current.id && (
         <List
-          title="المواد"
+          title="Subjects"
           table="subjects"
           parentKey="semester_id"
           parentId={current.id}
           fields={[
-            { key: "name_ar", label: "الاسم بالعربي" },
-            { key: "name", label: "الاسم بالإنجليزي" },
-            { key: "description", label: "الوصف" },
-            { key: "order_index", label: "الترتيب", type: "number" },
+            { key: "name", label: "Name" },
+            { key: "description", label: "Description" },
+            { key: "order_index", label: "Order", type: "number" },
           ]}
-          onOpen={(row) => setPath([...path, { kind: "subject", id: row.id, label: row.name_ar || row.name }])}
+          onOpen={(row) => setPath([...path, { kind: "subject", id: row.id, label: row.name }])}
         />
       )}
       {current.kind === "subject" && current.id && (
         <>
           <List
-            title="الشابترز"
+            title="Chapters"
             table="chapters"
             parentKey="subject_id"
             parentId={current.id}
-            fields={[{ key: "name_ar", label: "الاسم بالعربي" }, { key: "name", label: "الاسم بالإنجليزي" }, { key: "order_index", label: "الترتيب", type: "number" }]}
-            onOpen={(row) => setPath([...path, { kind: "chapter", id: row.id, label: row.name_ar || row.name }])}
+            fields={[{ key: "name", label: "Name" }, { key: "order_index", label: "Order", type: "number" }]}
+            onOpen={(row) => setPath([...path, { kind: "chapter", id: row.id, label: row.name }])}
           />
           <div className="mt-8">
             <List
-              title="الأقسام الإضافية (Spotters, OSPE, ...)"
+              title="Sections (Spotters, OSPE, ...)"
               table="sections"
               parentKey="subject_id"
               parentId={current.id}
               fields={[
-                { key: "name_ar", label: "الاسم" },
+                { key: "name", label: "Name" },
                 {
                   key: "kind",
-                  label: "النوع",
+                  label: "Kind",
                   type: "select",
                   options: [
                     "question_bank", "formative", "previous_years", "mock_exam",
@@ -100,15 +99,14 @@ function ContentManager() {
       )}
       {current.kind === "chapter" && current.id && (
         <List
-          title="المحاضرات"
+          title="Lectures"
           table="lectures"
           parentKey="chapter_id"
           parentId={current.id}
           fields={[
-            { key: "name_ar", label: "الاسم بالعربي" },
-            { key: "name", label: "الاسم بالإنجليزي" },
-            { key: "description", label: "الوصف" },
-            { key: "order_index", label: "الترتيب", type: "number" },
+            { key: "name", label: "Name" },
+            { key: "description", label: "Description" },
+            { key: "order_index", label: "Order", type: "number" },
           ]}
         />
       )}
@@ -145,11 +143,11 @@ function List({ title, table, parentKey, parentId, fields, onOpen }: {
       if (editing) {
         const { error } = await supabase.from(table as any).update(payload).eq("id", editing.id);
         if (error) throw error;
-        toast.success("تم التحديث");
+        toast.success("Updated");
       } else {
         const { error } = await supabase.from(table as any).insert(payload);
         if (error) throw error;
-        toast.success("تمت الإضافة");
+        toast.success("Added");
       }
       setEditing(null); setCreating(false);
       qc.invalidateQueries({ queryKey });
@@ -158,10 +156,10 @@ function List({ title, table, parentKey, parentId, fields, onOpen }: {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("هل أنت متأكد من الحذف؟")) return;
+    if (!confirm("Are you sure you want to delete this?")) return;
     const { error } = await supabase.from(table as any).delete().eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success("تم الحذف"); qc.invalidateQueries({ queryKey }); qc.invalidateQueries({ queryKey: ["years_tree"] }); }
+    else { toast.success("Deleted"); qc.invalidateQueries({ queryKey }); qc.invalidateQueries({ queryKey: ["years_tree"] }); }
   };
 
   return (
@@ -169,16 +167,16 @@ function List({ title, table, parentKey, parentId, fields, onOpen }: {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold">{title}</h2>
         <button onClick={() => setCreating(true)} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-          <Plus className="h-4 w-4" /> إضافة
+          <Plus className="h-4 w-4" /> Add
         </button>
       </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">جاري التحميل...</p>}
+      {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
       <div className="overflow-hidden rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr>
-              {fields.map(f => <th key={f.key} className="px-4 py-3 text-right font-medium text-muted-foreground">{f.label}</th>)}
+              {fields.map(f => <th key={f.key} className="px-4 py-3 text-left font-medium text-muted-foreground">{f.label}</th>)}
               <th className="w-32 px-4 py-3"></th>
             </tr>
           </thead>
@@ -199,7 +197,7 @@ function List({ title, table, parentKey, parentId, fields, onOpen }: {
               </tr>
             ))}
             {data?.length === 0 && (
-              <tr><td colSpan={fields.length + 1} className="px-4 py-6 text-center text-sm text-muted-foreground">لا توجد بيانات</td></tr>
+              <tr><td colSpan={fields.length + 1} className="px-4 py-6 text-center text-sm text-muted-foreground">No data</td></tr>
             )}
           </tbody>
         </table>
@@ -222,7 +220,7 @@ function RowDialog({ fields, initial, onClose, onSave }: { fields: Field[]; init
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-elegant" onClick={(e) => e.stopPropagation()}>
-        <h3 className="mb-4 text-lg font-bold">{initial ? "تعديل" : "إضافة جديد"}</h3>
+        <h3 className="mb-4 text-lg font-bold">{initial ? "Edit" : "Add new"}</h3>
         <div className="space-y-3">
           {fields.map(f => (
             <div key={f.key}>
@@ -248,8 +246,8 @@ function RowDialog({ fields, initial, onClose, onSave }: { fields: Field[]; init
           ))}
         </div>
         <div className="mt-6 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm">إلغاء</button>
-          <button onClick={() => onSave(form)} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">حفظ</button>
+          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm">Cancel</button>
+          <button onClick={() => onSave(form)} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Save</button>
         </div>
       </div>
     </div>
