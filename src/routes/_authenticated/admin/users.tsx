@@ -31,27 +31,27 @@ function UsersAdmin() {
       const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "admin");
       if (error) { toast.error(error.message); return; }
     }
-    toast.success("تم التحديث");
+    toast.success("Updated");
     qc.invalidateQueries({ queryKey: ["all_users"] });
   };
 
   const toggleBan = async (userId: string, banned: boolean) => {
     const { error } = await supabase.from("profiles").update({ is_banned: !banned }).eq("id", userId);
     if (error) toast.error(error.message);
-    else { toast.success("تم التحديث"); qc.invalidateQueries({ queryKey: ["all_users"] }); }
+    else { toast.success("Updated"); qc.invalidateQueries({ queryKey: ["all_users"] }); }
   };
 
   return (
     <AdminShell>
-      <h1 className="mb-6 text-3xl font-bold">المستخدمون</h1>
+      <h1 className="mb-6 text-3xl font-bold">Users</h1>
       <div className="overflow-hidden rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr>
-              <th className="px-4 py-3 text-right">الاسم</th>
-              <th className="px-4 py-3 text-right">البريد</th>
-              <th className="px-4 py-3 text-right">الدور</th>
-              <th className="px-4 py-3 text-right">الحالة</th>
+              <th className="px-4 py-3 text-left">Name</th>
+              <th className="px-4 py-3 text-left">Email</th>
+              <th className="px-4 py-3 text-left">Role</th>
+              <th className="px-4 py-3 text-left">Status</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -69,15 +69,15 @@ function UsersAdmin() {
                   </td>
                   <td className="px-4 py-3">
                     {u.is_banned
-                      ? <span className="rounded bg-destructive/10 px-2 py-0.5 text-xs text-destructive">محظور</span>
-                      : <span className="rounded bg-success/10 px-2 py-0.5 text-xs text-success">نشط</span>}
+                      ? <span className="rounded bg-destructive/10 px-2 py-0.5 text-xs text-destructive">Banned</span>
+                      : <span className="rounded bg-success/10 px-2 py-0.5 text-xs text-success">Active</span>}
                   </td>
                   <td className="flex justify-end gap-2 px-4 py-3">
                     <button onClick={() => setAdmin(u.id, !isAdmin)} className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent">
-                      {isAdmin ? <><ShieldOff className="ml-1 inline h-3 w-3" />إزالة Admin</> : <><Shield className="ml-1 inline h-3 w-3" />جعل Admin</>}
+                      {isAdmin ? <><ShieldOff className="mr-1 inline h-3 w-3" />Remove admin</> : <><Shield className="mr-1 inline h-3 w-3" />Make admin</>}
                     </button>
                     <button onClick={() => toggleBan(u.id, u.is_banned)} className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent">
-                      {u.is_banned ? <><Check className="ml-1 inline h-3 w-3" />إلغاء الحظر</> : <><Ban className="ml-1 inline h-3 w-3" />حظر</>}
+                      {u.is_banned ? <><Check className="mr-1 inline h-3 w-3" />Unban</> : <><Ban className="mr-1 inline h-3 w-3" />Ban</>}
                     </button>
                   </td>
                 </tr>
