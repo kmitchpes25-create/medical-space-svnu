@@ -17,9 +17,9 @@ function FavPage() {
   });
   return (
     <AppShell>
-      <h1 className="mb-6 text-3xl font-bold">المفضلة</h1>
+      <h1 className="mb-6 text-3xl font-bold">Favorites</h1>
       <div className="space-y-2">
-        {!data?.length && <p className="text-sm text-muted-foreground">لا توجد أسئلة مفضلة.</p>}
+        {!data?.length && <p className="text-sm text-muted-foreground">No favorite questions yet.</p>}
         {data?.map((f: any) => (
           <div key={f.question?.id} className="rounded-xl border border-border bg-card p-4 text-sm">{f.question?.text}</div>
         ))}
