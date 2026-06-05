@@ -44,6 +44,7 @@ async function readFileAsText(file: File): Promise<string> {
     return out;
   }
   if (ext === "docx") {
+    // @ts-ignore - no types for browser bundle
     const mammoth: any = await import("mammoth/mammoth.browser");
     const buf = await file.arrayBuffer();
     const r = await mammoth.extractRawText({ arrayBuffer: buf });
