@@ -161,7 +161,7 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
 
   const save = async () => {
     if (!text.trim() || !subjectId) { toast.error("Fill the question text and pick a subject"); return; }
-    if (!choices.some(c => c.is_correct)) { toast.error("Mark at least one correct answer"); return; }
+    if (questionType !== "written" && !choices.some(c => c.is_correct)) { toast.error("Mark at least one correct answer"); return; }
     setSaving(true);
     try {
       const payload: any = {
