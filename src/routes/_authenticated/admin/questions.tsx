@@ -218,6 +218,7 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
               <option value="true_false">True/False</option>
               <option value="multiple_answers">Multiple Answers</option>
               <option value="clinical_case">Clinical Case</option>
+              <option value="written">Written (open-ended)</option>
             </select>
             <input placeholder="Exam year (for previous years)" type="number" value={examYear} onChange={(e)=>setExamYear(e.target.value)} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
           </div>

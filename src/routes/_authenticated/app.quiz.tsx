@@ -50,9 +50,12 @@ function QuizPage() {
   const q = questions[idx];
   const selected = answers[q.id] || [];
   const isMulti = q.question_type === "multiple_answers";
+  const isWritten = q.question_type === "written";
   const isRevealed = !!revealed[q.id];
   const correctIds = q.choices.filter(c => c.is_correct).map(c => c.id);
-  const isCorrect = isRevealed && selected.length === correctIds.length && correctIds.every(id => selected.includes(id));
+  const isCorrect = isWritten
+    ? selected.includes("__got_it__")
+    : isRevealed && selected.length === correctIds.length && correctIds.every(id => selected.includes(id));
 
   const toggle = (cid: string) => {
     if (isRevealed) return;
@@ -62,13 +65,15 @@ function QuizPage() {
         return { ...prev, [q.id]: cur.includes(cid) ? cur.filter(x => x !== cid) : [...cur, cid] };
       }
       const next = { ...prev, [q.id]: [cid] };
-      // auto-reveal for single-choice
       setTimeout(() => setRevealed(r => ({ ...r, [q.id]: true })), 0);
       return next;
     });
   };
 
   const checkAnswer = () => setRevealed(r => ({ ...r, [q.id]: true }));
+  const selfGrade = (gotIt: boolean) => {
+    setAnswers(prev => ({ ...prev, [q.id]: gotIt ? ["__got_it__"] : ["__missed__"] }));
+  };
 
   const submit = async () => {
     setSubmitting(true);
@@ -79,9 +84,14 @@ function QuizPage() {
       let correctCount = 0;
       const answerRows = questions.map(qq => {
         const sel = answers[qq.id] || [];
-        const correctIds = qq.choices.filter(c => c.is_correct).map(c => c.id).sort();
-        const selSorted = [...sel].sort();
-        const ok = correctIds.length === selSorted.length && correctIds.every((v, i) => v === selSorted[i]);
+        let ok = false;
+        if (qq.question_type === "written") {
+          ok = sel.includes("__got_it__");
+        } else {
+          const cIds = qq.choices.filter(c => c.is_correct).map(c => c.id).sort();
+          const selSorted = [...sel].sort();
+          ok = cIds.length === selSorted.length && cIds.every((v, i) => v === selSorted[i]);
+        }
         if (ok) correctCount++;
         return { question_id: qq.id, selected_choice_ids: sel, is_correct: ok };
       });
@@ -126,47 +136,75 @@ function QuizPage() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6">
-        <p className="text-base font-medium leading-relaxed">{q.text}</p>
-        <div className="mt-6 space-y-2">
-          {q.choices.map((c, i) => {
-            const isSel = selected.includes(c.id);
-            let cls = "border-border bg-background hover:bg-accent";
-            if (isRevealed) {
-              if (c.is_correct) cls = "border-success bg-success/10";
-              else if (isSel) cls = "border-destructive bg-destructive/10";
-              else cls = "border-border bg-background opacity-70";
-            } else if (isSel) {
-              cls = "border-primary bg-primary/10";
-            }
-            return (
-              <button
-                key={c.id}
-                onClick={() => toggle(c.id)}
-                disabled={isRevealed}
-                className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${cls}`}
-              >
-                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border text-xs font-semibold ${isSel && !isRevealed ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>
-                  {String.fromCharCode(65 + i)}
-                </span>
-                <span className="flex-1">{c.text}</span>
-                {isRevealed && c.is_correct && <CheckCircle2 className="h-4 w-4 text-success" />}
-                {isRevealed && isSel && !c.is_correct && <XCircle className="h-4 w-4 text-destructive" />}
+        <p className="text-base font-medium leading-relaxed whitespace-pre-wrap">{q.text}</p>
+
+        {isWritten ? (
+          <div className="mt-6">
+            {!isRevealed ? (
+              <button onClick={checkAnswer} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+                Reveal model answer
               </button>
-            );
-          })}
-        </div>
-
-        {isRevealed && (
-          <div className={`mt-4 rounded-xl border p-4 text-sm ${isCorrect ? "border-success/40 bg-success/5 text-success" : "border-destructive/40 bg-destructive/5 text-destructive"}`}>
-            <div className="font-semibold">{isCorrect ? "Correct ✓" : "Incorrect ✗"}</div>
-            {q.explanation && <p className="mt-1 text-muted-foreground">{q.explanation}</p>}
+            ) : (
+              <>
+                <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm whitespace-pre-wrap leading-relaxed">
+                  {q.explanation || "No model answer provided."}
+                </div>
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">How did you do?</span>
+                  <button onClick={() => selfGrade(true)} className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${selected.includes("__got_it__") ? "border-success bg-success/10 text-success" : "border-border"}`}>
+                    Got it right
+                  </button>
+                  <button onClick={() => selfGrade(false)} className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${selected.includes("__missed__") ? "border-destructive bg-destructive/10 text-destructive" : "border-border"}`}>
+                    Missed it
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        )}
+        ) : (
+          <>
+            <div className="mt-6 space-y-2">
+              {q.choices.map((c, i) => {
+                const isSel = selected.includes(c.id);
+                let cls = "border-border bg-background hover:bg-accent";
+                if (isRevealed) {
+                  if (c.is_correct) cls = "border-success bg-success/10";
+                  else if (isSel) cls = "border-destructive bg-destructive/10";
+                  else cls = "border-border bg-background opacity-70";
+                } else if (isSel) {
+                  cls = "border-primary bg-primary/10";
+                }
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => toggle(c.id)}
+                    disabled={isRevealed}
+                    className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${cls}`}
+                  >
+                    <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border text-xs font-semibold ${isSel && !isRevealed ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>
+                      {String.fromCharCode(65 + i)}
+                    </span>
+                    <span className="flex-1">{c.text}</span>
+                    {isRevealed && c.is_correct && <CheckCircle2 className="h-4 w-4 text-success" />}
+                    {isRevealed && isSel && !c.is_correct && <XCircle className="h-4 w-4 text-destructive" />}
+                  </button>
+                );
+              })}
+            </div>
 
-        {!isRevealed && isMulti && selected.length > 0 && (
-          <button onClick={checkAnswer} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-            Check answer
-          </button>
+            {isRevealed && (
+              <div className={`mt-4 rounded-xl border p-4 text-sm ${isCorrect ? "border-success/40 bg-success/5 text-success" : "border-destructive/40 bg-destructive/5 text-destructive"}`}>
+                <div className="font-semibold">{isCorrect ? "Correct ✓" : "Incorrect ✗"}</div>
+                {q.explanation && <p className="mt-1 text-muted-foreground">{q.explanation}</p>}
+              </div>
+            )}
+
+            {!isRevealed && isMulti && selected.length > 0 && (
+              <button onClick={checkAnswer} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+                Check answer
+              </button>
+            )}
+          </>
         )}
       </div>
 
