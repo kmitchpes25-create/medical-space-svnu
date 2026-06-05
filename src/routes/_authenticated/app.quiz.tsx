@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { toast } from "sonner";
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/quiz")({
   component: QuizPage,
