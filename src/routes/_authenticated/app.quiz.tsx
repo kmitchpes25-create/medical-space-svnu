@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { toast } from "sonner";
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/quiz")({
   component: QuizPage,
@@ -19,6 +19,7 @@ function QuizPage() {
   const [meta, setMeta] = useState<any>(null);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -49,16 +50,25 @@ function QuizPage() {
   const q = questions[idx];
   const selected = answers[q.id] || [];
   const isMulti = q.question_type === "multiple_answers";
+  const isRevealed = !!revealed[q.id];
+  const correctIds = q.choices.filter(c => c.is_correct).map(c => c.id);
+  const isCorrect = isRevealed && selected.length === correctIds.length && correctIds.every(id => selected.includes(id));
 
   const toggle = (cid: string) => {
+    if (isRevealed) return;
     setAnswers(prev => {
       const cur = prev[q.id] || [];
       if (isMulti) {
         return { ...prev, [q.id]: cur.includes(cid) ? cur.filter(x => x !== cid) : [...cur, cid] };
       }
-      return { ...prev, [q.id]: [cid] };
+      const next = { ...prev, [q.id]: [cid] };
+      // auto-reveal for single-choice
+      setTimeout(() => setRevealed(r => ({ ...r, [q.id]: true })), 0);
+      return next;
     });
   };
+
+  const checkAnswer = () => setRevealed(r => ({ ...r, [q.id]: true }));
 
   const submit = async () => {
     setSubmitting(true);
@@ -120,21 +130,44 @@ function QuizPage() {
         <div className="mt-6 space-y-2">
           {q.choices.map((c, i) => {
             const isSel = selected.includes(c.id);
+            let cls = "border-border bg-background hover:bg-accent";
+            if (isRevealed) {
+              if (c.is_correct) cls = "border-success bg-success/10";
+              else if (isSel) cls = "border-destructive bg-destructive/10";
+              else cls = "border-border bg-background opacity-70";
+            } else if (isSel) {
+              cls = "border-primary bg-primary/10";
+            }
             return (
               <button
                 key={c.id}
                 onClick={() => toggle(c.id)}
-                className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${isSel ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-accent"}`}
+                disabled={isRevealed}
+                className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${cls}`}
               >
-                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border text-xs font-semibold ${isSel ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>
+                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border text-xs font-semibold ${isSel && !isRevealed ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>
                   {String.fromCharCode(65 + i)}
                 </span>
                 <span className="flex-1">{c.text}</span>
-                {isSel && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                {isRevealed && c.is_correct && <CheckCircle2 className="h-4 w-4 text-success" />}
+                {isRevealed && isSel && !c.is_correct && <XCircle className="h-4 w-4 text-destructive" />}
               </button>
             );
           })}
         </div>
+
+        {isRevealed && (
+          <div className={`mt-4 rounded-xl border p-4 text-sm ${isCorrect ? "border-success/40 bg-success/5 text-success" : "border-destructive/40 bg-destructive/5 text-destructive"}`}>
+            <div className="font-semibold">{isCorrect ? "Correct ✓" : "Incorrect ✗"}</div>
+            {q.explanation && <p className="mt-1 text-muted-foreground">{q.explanation}</p>}
+          </div>
+        )}
+
+        {!isRevealed && isMulti && selected.length > 0 && (
+          <button onClick={checkAnswer} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+            Check answer
+          </button>
+        )}
       </div>
 
       <div className="mt-6 flex items-center justify-between gap-3">
