@@ -130,21 +130,44 @@ function QuizPage() {
         <div className="mt-6 space-y-2">
           {q.choices.map((c, i) => {
             const isSel = selected.includes(c.id);
+            let cls = "border-border bg-background hover:bg-accent";
+            if (isRevealed) {
+              if (c.is_correct) cls = "border-success bg-success/10";
+              else if (isSel) cls = "border-destructive bg-destructive/10";
+              else cls = "border-border bg-background opacity-70";
+            } else if (isSel) {
+              cls = "border-primary bg-primary/10";
+            }
             return (
               <button
                 key={c.id}
                 onClick={() => toggle(c.id)}
-                className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${isSel ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-accent"}`}
+                disabled={isRevealed}
+                className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${cls}`}
               >
-                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border text-xs font-semibold ${isSel ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>
+                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border text-xs font-semibold ${isSel && !isRevealed ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>
                   {String.fromCharCode(65 + i)}
                 </span>
                 <span className="flex-1">{c.text}</span>
-                {isSel && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                {isRevealed && c.is_correct && <CheckCircle2 className="h-4 w-4 text-success" />}
+                {isRevealed && isSel && !c.is_correct && <XCircle className="h-4 w-4 text-destructive" />}
               </button>
             );
           })}
         </div>
+
+        {isRevealed && (
+          <div className={`mt-4 rounded-xl border p-4 text-sm ${isCorrect ? "border-success/40 bg-success/5 text-success" : "border-destructive/40 bg-destructive/5 text-destructive"}`}>
+            <div className="font-semibold">{isCorrect ? "Correct ✓" : "Incorrect ✗"}</div>
+            {q.explanation && <p className="mt-1 text-muted-foreground">{q.explanation}</p>}
+          </div>
+        )}
+
+        {!isRevealed && isMulti && selected.length > 0 && (
+          <button onClick={checkAnswer} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+            Check answer
+          </button>
+        )}
       </div>
 
       <div className="mt-6 flex items-center justify-between gap-3">
