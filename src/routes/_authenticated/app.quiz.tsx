@@ -50,16 +50,25 @@ function QuizPage() {
   const q = questions[idx];
   const selected = answers[q.id] || [];
   const isMulti = q.question_type === "multiple_answers";
+  const isRevealed = !!revealed[q.id];
+  const correctIds = q.choices.filter(c => c.is_correct).map(c => c.id);
+  const isCorrect = isRevealed && selected.length === correctIds.length && correctIds.every(id => selected.includes(id));
 
   const toggle = (cid: string) => {
+    if (isRevealed) return;
     setAnswers(prev => {
       const cur = prev[q.id] || [];
       if (isMulti) {
         return { ...prev, [q.id]: cur.includes(cid) ? cur.filter(x => x !== cid) : [...cur, cid] };
       }
-      return { ...prev, [q.id]: [cid] };
+      const next = { ...prev, [q.id]: [cid] };
+      // auto-reveal for single-choice
+      setTimeout(() => setRevealed(r => ({ ...r, [q.id]: true })), 0);
+      return next;
     });
   };
+
+  const checkAnswer = () => setRevealed(r => ({ ...r, [q.id]: true }));
 
   const submit = async () => {
     setSubmitting(true);
