@@ -29,9 +29,10 @@ async function readFileAsText(file: File): Promise<string> {
   const ext = file.name.split(".").pop()?.toLowerCase();
   if (ext === "txt" || ext === "json" || ext === "md") return await file.text();
   if (ext === "pdf") {
-    // @ts-ignore - dynamic CDN load
-    const pdfjs: any = await import(/* @vite-ignore */ "https://esm.sh/pdfjs-dist@4.7.76/build/pdf.mjs");
-    pdfjs.GlobalWorkerOptions.workerSrc = "https://esm.sh/pdfjs-dist@4.7.76/build/pdf.worker.mjs";
+    const pdfjs: any = await import("pdfjs-dist");
+    // @ts-ignore
+    const worker = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+    pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
     const buf = await file.arrayBuffer();
     const doc = await pdfjs.getDocument({ data: buf }).promise;
     let out = "";
@@ -43,10 +44,9 @@ async function readFileAsText(file: File): Promise<string> {
     return out;
   }
   if (ext === "docx") {
-    // @ts-ignore
-    const m: any = await import(/* @vite-ignore */ "https://esm.sh/mammoth@1.8.0/mammoth.browser.min.js");
+    const mammoth: any = await import("mammoth/mammoth.browser");
     const buf = await file.arrayBuffer();
-    const r = await m.extractRawText({ arrayBuffer: buf });
+    const r = await mammoth.extractRawText({ arrayBuffer: buf });
     return r.value;
   }
   throw new Error("Unsupported file type. Use PDF, DOCX, TXT, or JSON.");
