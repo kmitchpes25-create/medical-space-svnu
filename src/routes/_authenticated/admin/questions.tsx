@@ -184,8 +184,10 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
       const rows = choices.filter(c => c.text.trim()).map((c, i) => ({
         question_id: qid, text: c.text, is_correct: c.is_correct, order_index: i,
       }));
-      const { error: cErr } = await supabase.from("choices").insert(rows);
-      if (cErr) throw cErr;
+      if (questionType !== "written" && rows.length) {
+        const { error: cErr } = await supabase.from("choices").insert(rows);
+        if (cErr) throw cErr;
+      }
       toast.success("Saved");
       onSaved();
     } catch (e: any) { toast.error(e.message); }
