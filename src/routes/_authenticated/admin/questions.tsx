@@ -161,7 +161,7 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
 
   const save = async () => {
     if (!text.trim() || !subjectId) { toast.error("Fill the question text and pick a subject"); return; }
-    if (!choices.some(c => c.is_correct)) { toast.error("Mark at least one correct answer"); return; }
+    if (questionType !== "written" && !choices.some(c => c.is_correct)) { toast.error("Mark at least one correct answer"); return; }
     setSaving(true);
     try {
       const payload: any = {
@@ -184,8 +184,10 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
       const rows = choices.filter(c => c.text.trim()).map((c, i) => ({
         question_id: qid, text: c.text, is_correct: c.is_correct, order_index: i,
       }));
-      const { error: cErr } = await supabase.from("choices").insert(rows);
-      if (cErr) throw cErr;
+      if (questionType !== "written" && rows.length) {
+        const { error: cErr } = await supabase.from("choices").insert(rows);
+        if (cErr) throw cErr;
+      }
       toast.success("Saved");
       onSaved();
     } catch (e: any) { toast.error(e.message); }
@@ -218,6 +220,7 @@ function QuestionDialog({ initial, subjects, onClose, onSaved }: any) {
               <option value="true_false">True/False</option>
               <option value="multiple_answers">Multiple Answers</option>
               <option value="clinical_case">Clinical Case</option>
+              <option value="written">Written (open-ended)</option>
             </select>
             <input placeholder="Exam year (for previous years)" type="number" value={examYear} onChange={(e)=>setExamYear(e.target.value)} className="rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
           </div>

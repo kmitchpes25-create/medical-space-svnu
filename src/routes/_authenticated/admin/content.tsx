@@ -77,7 +77,7 @@ function ContentManager() {
           />
           <div className="mt-8">
             <List
-              title="Sections (Spotters, OSPE, ...)"
+              title="Sections (Spotters, Written, ...)"
               table="sections"
               parentKey="subject_id"
               parentId={current.id}

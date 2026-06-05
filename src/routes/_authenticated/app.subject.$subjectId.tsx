@@ -16,7 +16,7 @@ const sectionCards = [
   { kind: "revision", label: "Revision", icon: Star, color: "text-warning" },
   { kind: "practical", label: "Practical", icon: BookOpen, color: "text-success" },
   { kind: "spotters", label: "Spotters", icon: BookOpen, color: "text-primary" },
-  { kind: "ospe", label: "OSPE", icon: BookOpen, color: "text-warning" },
+  { kind: "ospe", label: "Written", icon: BookOpen, color: "text-warning" },
   { kind: "assignments", label: "Assignments", icon: BookOpen, color: "text-success" },
 ];
 
