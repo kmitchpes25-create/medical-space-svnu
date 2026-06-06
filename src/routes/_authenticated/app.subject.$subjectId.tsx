@@ -76,6 +76,8 @@ function SubjectPage() {
         ))}
       </div>
 
+      <MistakesSection subjectId={subjectId} />
+
       <h2 className="mb-3 text-lg font-semibold">Chapters & Lectures</h2>
       <div className="space-y-3">
         {(subject?.chapters || []).sort((a: any, b: any) => a.order_index - b.order_index).map((ch: any) => (
