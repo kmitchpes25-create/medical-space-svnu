@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { BookOpen, ChevronRight } from "lucide-react";
+import { StreakBadge } from "@/components/streak-badge";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: AppHome,
@@ -23,9 +24,12 @@ function AppHome() {
 
   return (
     <AppShell>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Welcome to Medical Space</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Pick an academic year to get started</p>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Welcome to Medical Space</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Pick an academic year to get started</p>
+        </div>
+        <StreakBadge />
       </div>
 
       {isLoading ? (
