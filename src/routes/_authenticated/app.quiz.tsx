@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/app/quiz")({
 });
 
 interface QChoice { id: string; text: string; is_correct: boolean; order_index: number }
-interface QData { id: string; text: string; explanation: string | null; question_type: string; choices: QChoice[] }
+interface QData { id: string; text: string; explanation: string | null; question_type: string; subject_id?: string | null; chapter_id?: string | null; choices: QChoice[] }
 
 function QuizPage() {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ function QuizPage() {
       if (!ids.length) return [];
       const { data, error } = await supabase
         .from("questions")
-        .select("id, text, explanation, question_type, choices(id, text, is_correct, order_index)")
+        .select("id, text, explanation, question_type, subject_id, chapter_id, choices(id, text, is_correct, order_index)")
         .in("id", ids);
       if (error) throw error;
       return (data as any[]).map(q => ({ ...q, choices: (q.choices || []).sort((a:any,b:any)=>a.order_index-b.order_index) })) as QData[];
@@ -82,7 +82,9 @@ function QuizPage() {
       if (!u.user) throw new Error("Not authenticated");
 
       let correctCount = 0;
-      const answerRows = questions.map(qq => {
+      const answerRows: any[] = [];
+      const mistakeRows: any[] = [];
+      for (const qq of questions) {
         const sel = answers[qq.id] || [];
         let ok = false;
         if (qq.question_type === "written") {
@@ -93,8 +95,21 @@ function QuizPage() {
           ok = cIds.length === selSorted.length && cIds.every((v, i) => v === selSorted[i]);
         }
         if (ok) correctCount++;
-        return { question_id: qq.id, selected_choice_ids: sel, is_correct: ok };
-      });
+        answerRows.push({ question_id: qq.id, selected_choice_ids: sel, is_correct: ok });
+        if (!ok && qq.question_type !== "written" && qq.subject_id) {
+          const correctTxt = qq.choices.filter(c => c.is_correct).map(c => c.text).join(" / ") || "—";
+          const wrongTxt = qq.choices.filter(c => sel.includes(c.id)).map(c => c.text).join(" / ") || "(no answer)";
+          mistakeRows.push({
+            user_id: u.user.id,
+            subject_id: qq.subject_id,
+            chapter_id: qq.chapter_id || null,
+            question_id: qq.id,
+            question_text: qq.text,
+            correct_answer: correctTxt,
+            wrong_answer: wrongTxt,
+          });
+        }
+      }
 
       const total = questions.length;
       const pct = total ? (correctCount / total) * 100 : 0;
@@ -111,6 +126,9 @@ function QuizPage() {
       if (error) throw error;
 
       await supabase.from("exam_answers").insert(answerRows.map(r => ({ ...r, attempt_id: attempt.id })));
+      if (mistakeRows.length) {
+        await supabase.from("mistakes").upsert(mistakeRows, { onConflict: "user_id,question_id" });
+      }
 
       sessionStorage.removeItem("quiz_ids");
       sessionStorage.removeItem("quiz_meta");

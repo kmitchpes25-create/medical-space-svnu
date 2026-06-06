@@ -259,6 +259,64 @@ export type Database = {
           },
         ]
       }
+      mistakes: {
+        Row: {
+          chapter_id: string | null
+          correct_answer: string
+          created_at: string
+          id: string
+          question_id: string
+          question_text: string
+          subject_id: string | null
+          user_id: string
+          wrong_answer: string
+        }
+        Insert: {
+          chapter_id?: string | null
+          correct_answer: string
+          created_at?: string
+          id?: string
+          question_id: string
+          question_text: string
+          subject_id?: string | null
+          user_id: string
+          wrong_answer: string
+        }
+        Update: {
+          chapter_id?: string | null
+          correct_answer?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          question_text?: string
+          subject_id?: string | null
+          user_id?: string
+          wrong_answer?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mistakes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mistakes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mistakes_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -519,11 +577,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_streaks: {
+        Row: {
+          current_streak: number
+          last_login_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          last_login_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          last_login_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      bump_streak: {
+        Args: never
+        Returns: {
+          current_streak: number
+          last_login_date: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_streaks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
