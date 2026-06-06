@@ -66,19 +66,33 @@ function UploadPage() {
     queryFn: async () => (await supabase.from("subjects").select("id, name").order("name")).data || [],
   });
 
+  const [log, setLog] = useState<string[]>([]);
+  const addLog = (m: string) => { console.log("[upload]", m); setLog(prev => [...prev, `${new Date().toLocaleTimeString()} — ${m}`]); };
+
   const run = async () => {
     if (!file || !subjectId) { toast.error("Pick a file and a subject"); return; }
-    setBusy(true);
+    setBusy(true); setLog([]);
     try {
-      toast.info("Reading file...");
+      addLog(`Step 1: Reading file "${file.name}" (${(file.size/1024).toFixed(1)} KB)...`);
       const text = await readFileAsText(file);
-      if (!text.trim()) throw new Error("No text could be extracted");
-      toast.info(`Extracted ${text.length.toLocaleString()} characters. Sending to AI...`);
+      if (!text.trim()) throw new Error("No text could be extracted from file");
+      addLog(`Step 1 done: extracted ${text.length.toLocaleString()} characters`);
+
+      addLog(`Step 2: Sending text to AI (Gemini 2.5 Flash)...`);
       const result = await extract({ data: { text: text.slice(0, 180000), subjectId, sourceKind, defaultType } });
-      toast.success(`Imported ${result.imported} questions (${result.skipped} skipped, ${result.total} found).`);
+      addLog(`Step 3-4: AI returned ${result.total} questions, parsed JSON OK`);
+      addLog(`Step 5: Saved ${result.imported} new, ${result.skipped} skipped (duplicates or invalid)`);
+      if (result.errors?.length) {
+        addLog(`Warnings (${result.errors.length}): ${result.errors.slice(0, 3).join(" | ")}`);
+      }
+      addLog(`Step 6: Questions now appear in Question Bank for this subject.`);
+      toast.success(`Imported ${result.imported} of ${result.total} questions (${result.skipped} skipped).`);
       setFile(null);
     } catch (e: any) {
-      toast.error(e.message || "Extraction failed");
+      const msg = e?.message || String(e) || "Extraction failed";
+      addLog(`ERROR: ${msg}`);
+      toast.error(msg, { duration: 8000 });
+      console.error("[upload] full error:", e);
     } finally {
       setBusy(false);
     }
