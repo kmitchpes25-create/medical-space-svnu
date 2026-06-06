@@ -153,6 +153,13 @@ function UploadPage() {
         </div>
       </div>
 
+      {log.length > 0 && (
+        <div className="mt-6 rounded-xl border border-border bg-card p-4">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Pipeline log</div>
+          <pre className="max-h-64 overflow-auto text-xs leading-relaxed text-foreground/80 whitespace-pre-wrap">{log.join("\n")}</pre>
+        </div>
+      )}
+
       <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
         <div className="flex items-center gap-2 font-semibold text-primary">
           <Sparkles className="h-4 w-4" /> Powered by Lovable AI (Gemini 2.5 Flash)
