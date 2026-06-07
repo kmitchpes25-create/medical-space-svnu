@@ -42,14 +42,22 @@ function QuestionsAdmin() {
   const { data: questions, isLoading } = useQuery({
     queryKey: ["admin_questions", subjectId, chapterId, lectureId, sourceKind],
     queryFn: async () => {
-      let q = supabase.from("questions").select("id, text, source_kind, exam_year, question_type, choices(id, text, is_correct, order_index)").order("created_at", { ascending: false }).limit(200);
+      let q = supabase.from("questions").select("id, text, source_kind, exam_year, question_type, choices(id, text, order_index)").order("created_at", { ascending: false }).limit(200);
       if (subjectId) q = q.eq("subject_id", subjectId);
       if (chapterId) q = q.eq("chapter_id", chapterId);
       if (lectureId) q = q.eq("lecture_id", lectureId);
       if (sourceKind) q = q.eq("source_kind", sourceKind as any);
       const { data, error } = await q;
       if (error) throw error;
-      return data || [];
+      const qids = (data || []).map((q: any) => q.id);
+      if (!qids.length) return [];
+      const { data: cflags } = await supabase.rpc("get_choices_admin", { _qids: qids as any });
+      const map = new Map<string, boolean>();
+      for (const c of (cflags as any[]) || []) map.set(c.id, !!c.is_correct);
+      return (data || []).map((q: any) => ({
+        ...q,
+        choices: (q.choices || []).map((c: any) => ({ ...c, is_correct: map.get(c.id) || false })),
+      }));
     },
   });
 

@@ -95,7 +95,7 @@ function RetryModal({ mistake, onClose, onSolved }: { mistake: Mistake; onClose:
     queryFn: async () => {
       const { data, error } = await supabase
         .from("questions")
-        .select("id, text, question_type, choices(id, text, is_correct, order_index)")
+        .select("id, text, question_type, choices(id, text, order_index)")
         .eq("id", mistake.question_id)
         .single();
       if (error) throw error;
@@ -104,10 +104,18 @@ function RetryModal({ mistake, onClose, onSolved }: { mistake: Mistake; onClose:
   });
 
   const [picked, setPicked] = useState<string | null>(null);
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState<{ correct_ids: string[]; is_correct: boolean } | null>(null);
   const choices = (q?.choices || []).slice().sort((a: any, b: any) => a.order_index - b.order_index);
-  const correct = choices.find((c: any) => c.is_correct);
-  const isCorrect = revealed && picked === correct?.id;
+
+  const pick = async (cid: string) => {
+    setPicked(cid);
+    const { data, error } = await supabase.rpc("grade_questions", {
+      _answers: [{ question_id: mistake.question_id, selected_choice_ids: [cid] }] as any,
+    });
+    if (error) { toast.error(error.message); return; }
+    const r = (data as any[])[0];
+    setRevealed({ correct_ids: r?.correct_choice_ids || [], is_correct: !!r?.is_correct });
+  };
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-4 backdrop-blur-sm" onClick={onClose}>
@@ -120,29 +128,30 @@ function RetryModal({ mistake, onClose, onSolved }: { mistake: Mistake; onClose:
             <p className="mt-3 text-sm font-medium">{q.text}</p>
             <div className="mt-4 space-y-2">
               {choices.map((c: any, i: number) => {
+                const isCorr = revealed?.correct_ids.includes(c.id);
                 let cls = "border-border hover:bg-accent";
                 if (revealed) {
-                  if (c.is_correct) cls = "border-success bg-success/10";
+                  if (isCorr) cls = "border-success bg-success/10";
                   else if (picked === c.id) cls = "border-destructive bg-destructive/10";
                 } else if (picked === c.id) cls = "border-primary bg-primary/10";
                 return (
                   <button
                     key={c.id}
-                    disabled={revealed}
-                    onClick={() => { setPicked(c.id); setRevealed(true); }}
+                    disabled={!!revealed}
+                    onClick={() => pick(c.id)}
                     className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left text-sm ${cls}`}
                   >
                     <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border text-xs">{String.fromCharCode(65 + i)}</span>
                     <span className="flex-1">{c.text}</span>
-                    {revealed && c.is_correct && <CheckCircle2 className="h-4 w-4 text-success" />}
-                    {revealed && picked === c.id && !c.is_correct && <XCircle className="h-4 w-4 text-destructive" />}
+                    {revealed && isCorr && <CheckCircle2 className="h-4 w-4 text-success" />}
+                    {revealed && picked === c.id && !isCorr && <XCircle className="h-4 w-4 text-destructive" />}
                   </button>
                 );
               })}
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={onClose} className="rounded-lg border border-border px-3 py-1.5 text-xs">Close</button>
-              {isCorrect && (
+              {revealed?.is_correct && (
                 <button onClick={onSolved} className="rounded-lg bg-success px-3 py-1.5 text-xs font-medium text-success-foreground">
                   Mark as learned
                 </button>

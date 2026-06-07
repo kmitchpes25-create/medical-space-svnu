@@ -6,9 +6,11 @@ import {
   Home, LogOut, Settings, Stethoscope, Star, History,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const studentLinks = [
   { to: "/app", label: "Home", icon: Home },
+  { to: "/app/highlights", label: "Highlights", icon: Star },
   { to: "/app/favorites", label: "Favorites", icon: Star },
   { to: "/app/history", label: "My results", icon: History },
 ];
@@ -33,7 +35,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-4 md:flex">
         <Link to="/app" className="mb-8 flex items-center gap-2 px-2">
           <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-glow">
@@ -66,12 +68,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </nav>
 
-        <button onClick={logout} className="mt-4 flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition hover:bg-sidebar-accent">
-          <LogOut className="h-4 w-4" /> Sign out
-        </button>
+        <div className="mt-4 flex items-center justify-between gap-2">
+          <button onClick={logout} className="flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition hover:bg-sidebar-accent">
+            <LogOut className="h-4 w-4" /> Sign out
+          </button>
+          <ThemeToggle />
+        </div>
       </aside>
 
       <main className="flex-1 overflow-x-hidden">
+        <div className="flex items-center justify-end gap-2 border-b border-border bg-background/60 px-4 py-2 md:hidden">
+          <ThemeToggle />
+        </div>
         <div className="mx-auto max-w-6xl p-4 sm:p-8">{children}</div>
       </main>
     </div>

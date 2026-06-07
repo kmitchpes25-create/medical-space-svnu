@@ -218,6 +218,55 @@ export type Database = {
           },
         ]
       }
+      highlights: {
+        Row: {
+          chapter_id: string | null
+          created_at: string
+          id: string
+          question_id: string
+          subject_id: string | null
+          user_id: string
+        }
+        Insert: {
+          chapter_id?: string | null
+          created_at?: string
+          id?: string
+          question_id: string
+          subject_id?: string | null
+          user_id: string
+        }
+        Update: {
+          chapter_id?: string | null
+          created_at?: string
+          id?: string
+          question_id?: string
+          subject_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "highlights_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "highlights_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "highlights_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lectures: {
         Row: {
           chapter_id: string
@@ -617,6 +666,26 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      get_choices_admin: {
+        Args: { _qids: string[] }
+        Returns: {
+          id: string
+          is_correct: boolean
+          order_index: number
+          question_id: string
+          text: string
+        }[]
+      }
+      grade_questions: {
+        Args: { _answers: Json }
+        Returns: {
+          correct_choice_ids: string[]
+          correct_text: string
+          explanation: string
+          is_correct: boolean
+          question_id: string
+        }[]
       }
       has_role: {
         Args: {

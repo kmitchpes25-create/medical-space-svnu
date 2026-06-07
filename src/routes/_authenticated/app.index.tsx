@@ -9,7 +9,23 @@ export const Route = createFileRoute("/_authenticated/app/")({
   component: AppHome,
 });
 
+function firstName(full?: string | null, email?: string | null) {
+  if (full && full.trim()) return full.trim().split(/\s+/)[0];
+  if (email) return email.split("@")[0];
+  return "";
+}
+
 function AppHome() {
+  const { data: me } = useQuery({
+    queryKey: ["me_profile"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return null;
+      const { data } = await supabase.from("profiles").select("full_name, email").eq("id", u.user.id).maybeSingle();
+      return data;
+    },
+  });
+
   const { data: years, isLoading } = useQuery({
     queryKey: ["years_tree"],
     queryFn: async () => {
@@ -22,11 +38,15 @@ function AppHome() {
     },
   });
 
+  const name = firstName(me?.full_name, me?.email);
+
   return (
     <AppShell>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Welcome to Medical Space</h1>
+          <h1 className="text-3xl font-bold">
+            Welcome {name ? `Dr. ${name}` : "Doctor"} 👋
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">Pick an academic year to get started</p>
         </div>
         <StreakBadge />
