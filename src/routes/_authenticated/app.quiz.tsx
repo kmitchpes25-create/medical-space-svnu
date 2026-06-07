@@ -191,9 +191,6 @@ function QuizPage() {
 
         {isWritten ? (
           <div className="mt-6">
-            {!isRevealed ? (
-              <button onClick={() => selfGrade(false /* placeholder to mark revealed */)} className="hidden" />
-            ) : null}
             {!(selected.includes("__got_it__") || selected.includes("__missed__")) && !rev ? (
               <button onClick={() => setReveal(prev => ({ ...prev, [q.id]: { correct_choice_ids: [], correct_text: q.explanation || "", is_correct: false, explanation: q.explanation } }))} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
                 Reveal model answer
