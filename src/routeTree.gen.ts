@@ -17,6 +17,7 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAppQuizRouteImport } from './routes/_authenticated/app.quiz'
 import { Route as AuthenticatedAppHistoryRouteImport } from './routes/_authenticated/app.history'
+import { Route as AuthenticatedAppHighlightsRouteImport } from './routes/_authenticated/app.highlights'
 import { Route as AuthenticatedAppFavoritesRouteImport } from './routes/_authenticated/app.favorites'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin/upload'
@@ -64,6 +65,12 @@ const AuthenticatedAppHistoryRoute = AuthenticatedAppHistoryRouteImport.update({
   path: '/app/history',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAppHighlightsRoute =
+  AuthenticatedAppHighlightsRouteImport.update({
+    id: '/app/highlights',
+    path: '/app/highlights',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppFavoritesRoute =
   AuthenticatedAppFavoritesRouteImport.update({
     id: '/app/favorites',
@@ -115,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/app/favorites': typeof AuthenticatedAppFavoritesRoute
+  '/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/quiz': typeof AuthenticatedAppQuizRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -130,6 +138,7 @@ export interface FileRoutesByTo {
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/app/favorites': typeof AuthenticatedAppFavoritesRoute
+  '/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/quiz': typeof AuthenticatedAppQuizRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -148,6 +157,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/app/favorites': typeof AuthenticatedAppFavoritesRoute
+  '/_authenticated/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/_authenticated/app/history': typeof AuthenticatedAppHistoryRoute
   '/_authenticated/app/quiz': typeof AuthenticatedAppQuizRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/admin/upload'
     | '/admin/users'
     | '/app/favorites'
+    | '/app/highlights'
     | '/app/history'
     | '/app/quiz'
     | '/admin/'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/admin/upload'
     | '/admin/users'
     | '/app/favorites'
+    | '/app/highlights'
     | '/app/history'
     | '/app/quiz'
     | '/admin'
@@ -198,6 +210,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/upload'
     | '/_authenticated/admin/users'
     | '/_authenticated/app/favorites'
+    | '/_authenticated/app/highlights'
     | '/_authenticated/app/history'
     | '/_authenticated/app/quiz'
     | '/_authenticated/admin/'
@@ -268,6 +281,13 @@ declare module '@tanstack/react-router' {
       path: '/app/history'
       fullPath: '/app/history'
       preLoaderRoute: typeof AuthenticatedAppHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/highlights': {
+      id: '/_authenticated/app/highlights'
+      path: '/app/highlights'
+      fullPath: '/app/highlights'
+      preLoaderRoute: typeof AuthenticatedAppHighlightsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app/favorites': {
@@ -347,6 +367,7 @@ const AuthenticatedAdminRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAppFavoritesRoute: typeof AuthenticatedAppFavoritesRoute
+  AuthenticatedAppHighlightsRoute: typeof AuthenticatedAppHighlightsRoute
   AuthenticatedAppHistoryRoute: typeof AuthenticatedAppHistoryRoute
   AuthenticatedAppQuizRoute: typeof AuthenticatedAppQuizRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
@@ -357,6 +378,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAppFavoritesRoute: AuthenticatedAppFavoritesRoute,
+  AuthenticatedAppHighlightsRoute: AuthenticatedAppHighlightsRoute,
   AuthenticatedAppHistoryRoute: AuthenticatedAppHistoryRoute,
   AuthenticatedAppQuizRoute: AuthenticatedAppQuizRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
