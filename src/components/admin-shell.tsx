@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { type ReactNode } from "react";
-import { Stethoscope, LayoutDashboard, Layers, FileQuestion, Users, Upload, ArrowLeft, LogOut } from "lucide-react";
+import { Stethoscope, LayoutDashboard, Layers, FileQuestion, Users, Upload, ArrowLeft, LogOut, Archive } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -9,6 +9,7 @@ const links = [
   { to: "/admin/content", label: "Content", icon: Layers },
   { to: "/admin/questions", label: "Questions", icon: FileQuestion },
   { to: "/admin/upload", label: "Uploads", icon: Upload },
+  { to: "/admin/recovery", label: "Recovery", icon: Archive },
   { to: "/admin/users", label: "Users", icon: Users },
 ];
 

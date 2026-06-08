@@ -17,6 +17,7 @@ export type Database = {
       academic_years: {
         Row: {
           created_at: string
+          deleted_at: string | null
           id: string
           name: string
           name_ar: string | null
@@ -25,6 +26,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           id?: string
           name: string
           name_ar?: string | null
@@ -33,6 +35,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           id?: string
           name?: string
           name_ar?: string | null
@@ -269,33 +272,39 @@ export type Database = {
       }
       lectures: {
         Row: {
-          chapter_id: string
+          chapter_id: string | null
           created_at: string
+          deleted_at: string | null
           description: string | null
           id: string
           name: string
           name_ar: string | null
           order_index: number
+          section_id: string | null
           updated_at: string
         }
         Insert: {
-          chapter_id: string
+          chapter_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           name: string
           name_ar?: string | null
           order_index?: number
+          section_id?: string | null
           updated_at?: string
         }
         Update: {
-          chapter_id?: string
+          chapter_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           name?: string
           name_ar?: string | null
           order_index?: number
+          section_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -304,6 +313,13 @@ export type Database = {
             columns: ["chapter_id"]
             isOneToOne: false
             referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lectures_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
             referencedColumns: ["id"]
           },
         ]
@@ -396,11 +412,48 @@ export type Database = {
         }
         Relationships: []
       }
+      question_lectures: {
+        Row: {
+          created_at: string
+          lecture_id: string
+          order_index: number
+          question_id: string
+        }
+        Insert: {
+          created_at?: string
+          lecture_id: string
+          order_index?: number
+          question_id: string
+        }
+        Update: {
+          created_at?: string
+          lecture_id?: string
+          order_index?: number
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_lectures_lecture_id_fkey"
+            columns: ["lecture_id"]
+            isOneToOne: false
+            referencedRelation: "lectures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_lectures_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questions: {
         Row: {
           chapter_id: string | null
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           difficulty: number | null
           exam_year: number | null
           explanation: string | null
@@ -418,6 +471,7 @@ export type Database = {
           chapter_id?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           difficulty?: number | null
           exam_year?: number | null
           explanation?: string | null
@@ -435,6 +489,7 @@ export type Database = {
           chapter_id?: string | null
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           difficulty?: number | null
           exam_year?: number | null
           explanation?: string | null
@@ -482,6 +537,7 @@ export type Database = {
       sections: {
         Row: {
           created_at: string
+          deleted_at: string | null
           description: string | null
           id: string
           kind: Database["public"]["Enums"]["section_kind"]
@@ -493,6 +549,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["section_kind"]
@@ -504,6 +561,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["section_kind"]
@@ -526,6 +584,7 @@ export type Database = {
       semesters: {
         Row: {
           created_at: string
+          deleted_at: string | null
           id: string
           name: string
           name_ar: string | null
@@ -535,6 +594,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           id?: string
           name: string
           name_ar?: string | null
@@ -544,6 +604,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           id?: string
           name?: string
           name_ar?: string | null
@@ -565,6 +626,7 @@ export type Database = {
         Row: {
           color: string | null
           created_at: string
+          deleted_at: string | null
           description: string | null
           id: string
           name: string
@@ -576,6 +638,7 @@ export type Database = {
         Insert: {
           color?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           name: string
@@ -587,6 +650,7 @@ export type Database = {
         Update: {
           color?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           name?: string
@@ -652,6 +716,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_move_node: {
+        Args: { _id: string; _new_parent: string; _table: string }
+        Returns: undefined
+      }
+      admin_reorder: {
+        Args: { _ids: string[]; _table: string }
+        Returns: undefined
+      }
+      admin_restore: {
+        Args: { _id: string; _table: string }
+        Returns: undefined
+      }
+      admin_soft_delete: {
+        Args: { _id: string; _table: string }
+        Returns: undefined
+      }
       bump_streak: {
         Args: never
         Returns: {

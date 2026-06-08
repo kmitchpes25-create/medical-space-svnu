@@ -9,7 +9,6 @@ Rules:
 - Skip page numbers, headers, watermarks, decorative text.
 - Deduplicate. Preserve original wording. Output ONLY a valid JSON object (no markdown fences, no prose).`;
 
-// Robust JSON extraction: strips fences, finds {...} or [...] braces, accepts both shapes.
 function extractJSON(raw: string): any {
   let s = String(raw || "").trim();
   s = s.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
@@ -37,7 +36,7 @@ function normalizeQuestions(parsed: any): any[] {
 
 export const extractQuestions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { text: string; subjectId: string; sourceKind: string; defaultType?: "mcq" | "written" }) => {
+  .inputValidator((input: { text: string; subjectId: string; sourceKind: string; sectionId?: string; lectureId?: string; defaultType?: "mcq" | "written" }) => {
     if (!input.text || input.text.length < 20) throw new Error("Text too short");
     if (input.text.length > 200000) throw new Error("Text too large (max 200k chars)");
     if (!input.subjectId) throw new Error("subjectId required");
@@ -47,7 +46,7 @@ export const extractQuestions = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
 
-    console.log("[extract] step 2 — sending AI request", { chars: data.text.length, subjectId: data.subjectId, sourceKind: data.sourceKind });
+    console.log("[extract] step 2 — sending AI request", { chars: data.text.length, subjectId: data.subjectId, sectionId: data.sectionId, lectureId: data.lectureId });
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -72,14 +71,11 @@ export const extractQuestions = createServerFn({ method: "POST" })
     const content: string = json.choices?.[0]?.message?.content || "";
     console.log("[extract] step 3 — AI response received", { finish_reason: finish, content_length: content.length, head: content.slice(0, 300) });
 
-    if (finish === "length") {
-      console.warn("[extract] response truncated by token limit — output may be incomplete");
-    }
+    if (finish === "length") console.warn("[extract] response truncated by token limit — output may be incomplete");
 
     let parsed: any;
-    try {
-      parsed = extractJSON(content);
-    } catch (e: any) {
+    try { parsed = extractJSON(content); }
+    catch (e: any) {
       console.error("[extract] step 4 — JSON parse failed", e.message);
       throw new Error(`Could not parse AI JSON: ${e.message}`);
     }
@@ -99,40 +95,55 @@ export const extractQuestions = createServerFn({ method: "POST" })
         const choices = Array.isArray(q.choices) ? q.choices : Array.isArray(q.options) ? q.options : [];
 
         if (type === "mcq") {
-          if (!choices.length) { skipped++; errors.push(`MCQ missing choices: ${text.slice(0,60)}`); continue; }
+          if (!choices.length) { skipped++; errors.push(`MCQ missing choices: ${text.slice(0, 60)}`); continue; }
           if (!choices.some((c: any) => c.is_correct || c.correct)) {
-            skipped++; errors.push(`No correct answer marked: ${text.slice(0,60)}`); continue;
+            skipped++; errors.push(`No correct answer marked: ${text.slice(0, 60)}`); continue;
           }
         }
 
         const enc = new TextEncoder().encode(text.toLowerCase());
         const hashBuf = await crypto.subtle.digest("SHA-256", enc);
-        const hash = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        const hash = Array.from(new Uint8Array(hashBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
 
         const { data: existing } = await supabase.from("questions").select("id").eq("hash", hash).maybeSingle();
-        if (existing) { skipped++; continue; }
+        let qid: string;
+        if (existing) {
+          qid = existing.id;
+          skipped++;
+        } else {
+          const { data: inserted, error: qErr } = await supabase.from("questions").insert({
+            subject_id: data.subjectId,
+            section_id: data.sectionId || null,
+            lecture_id: data.lectureId || null,
+            source_kind: data.sourceKind as any,
+            question_type: type as any,
+            text, explanation, hash,
+          }).select("id").single();
+          if (qErr || !inserted) { skipped++; errors.push(`DB insert failed: ${qErr?.message || "unknown"}`); continue; }
+          qid = inserted.id;
 
-        const { data: inserted, error: qErr } = await supabase.from("questions").insert({
-          subject_id: data.subjectId,
-          source_kind: data.sourceKind as any,
-          question_type: type as any,
-          text, explanation, hash,
-        }).select("id").single();
-        if (qErr || !inserted) { skipped++; errors.push(`DB insert failed: ${qErr?.message || "unknown"}`); continue; }
-
-        if (type === "mcq") {
-          const rows = choices.map((c: any, i: number) => ({
-            question_id: inserted.id,
-            text: String(c.text || c.label || ""),
-            is_correct: !!(c.is_correct || c.correct),
-            order_index: i,
-          })).filter((r: any) => r.text);
-          if (rows.length) {
-            const { error: cErr } = await supabase.from("choices").insert(rows);
-            if (cErr) errors.push(`Choices insert failed: ${cErr.message}`);
+          if (type === "mcq") {
+            const rows = choices.map((c: any, i: number) => ({
+              question_id: qid,
+              text: String(c.text || c.label || ""),
+              is_correct: !!(c.is_correct || c.correct),
+              order_index: i,
+            })).filter((r: any) => r.text);
+            if (rows.length) {
+              const { error: cErr } = await supabase.from("choices").insert(rows);
+              if (cErr) errors.push(`Choices insert failed: ${cErr.message}`);
+            }
           }
+          imported++;
         }
-        imported++;
+
+        // Always link to the chosen lecture (for reuse) — duplicates are deduped via PK
+        if (data.lectureId) {
+          await supabase.from("question_lectures" as any).upsert(
+            { question_id: qid, lecture_id: data.lectureId },
+            { onConflict: "question_id,lecture_id" } as any,
+          );
+        }
       } catch (e: any) {
         skipped++;
         errors.push(`Item error: ${e.message}`);
