@@ -1,253 +1,355 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin-shell";
-import { Plus, Pencil, Trash2, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { ChevronRight, ChevronDown, Plus, Pencil, Trash2, ArrowUp, ArrowDown, Move, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/content")({
-  component: ContentManager,
+  component: ContentTree,
 });
 
-type Crumb = { kind: "years" | "year" | "semester" | "subject" | "chapter"; id?: string; label: string };
+type Level = "academic_years" | "semesters" | "subjects" | "sections" | "lectures";
+const LABEL: Record<Level, string> = {
+  academic_years: "Year",
+  semesters: "Module",
+  subjects: "Subject",
+  sections: "Section",
+  lectures: "Lecture",
+};
+const CHILD: Partial<Record<Level, Level>> = {
+  academic_years: "semesters",
+  semesters: "subjects",
+  subjects: "sections",
+  sections: "lectures",
+};
+const PARENT_COL: Partial<Record<Level, string>> = {
+  semesters: "year_id",
+  subjects: "semester_id",
+  sections: "subject_id",
+  lectures: "section_id",
+};
 
-function ContentManager() {
-  const [path, setPath] = useState<Crumb[]>([{ kind: "years", label: "Academic years" }]);
-  const current = path[path.length - 1];
+const SECTION_KINDS = [
+  "question_bank", "formative", "previous_years", "mock_exam",
+  "revision", "practical", "spotters", "assignments", "ospe", "custom",
+];
+
+function ContentTree() {
+  const qc = useQueryClient();
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [editing, setEditing] = useState<{ level: Level; row?: any; parentId?: string } | null>(null);
+  const [moving, setMoving] = useState<{ level: Level; id: string } | null>(null);
+
+  const { data: tree, isLoading } = useQuery({
+    queryKey: ["content_tree"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("academic_years")
+        .select("id, name, order_index, deleted_at, semesters(id, name, order_index, deleted_at, year_id, subjects(id, name, order_index, deleted_at, semester_id, sections(id, name, kind, order_index, deleted_at, subject_id, lectures(id, name, order_index, deleted_at, section_id))))")
+        .is("deleted_at", null)
+        .order("order_index");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const refresh = () => qc.invalidateQueries({ queryKey: ["content_tree"] });
+
+  const softDelete = async (level: Level, id: string, name: string) => {
+    if (!confirm(`Soft-delete "${name}"? You can restore it from the Recovery page.`)) return;
+    const { error } = await supabase.rpc("admin_soft_delete" as any, { _table: level, _id: id });
+    if (error) toast.error(error.message); else { toast.success("Deleted"); refresh(); }
+  };
+
+  const reorder = async (level: Level, parentList: any[], id: string, dir: -1 | 1) => {
+    const ids = [...parentList].filter(x => !x.deleted_at).sort((a,b)=>a.order_index-b.order_index).map(x=>x.id);
+    const i = ids.indexOf(id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    const { error } = await supabase.rpc("admin_reorder" as any, { _table: level, _ids: ids });
+    if (error) toast.error(error.message); else refresh();
+  };
+
+  const moveNode = async (level: Level, id: string, newParent: string) => {
+    const { error } = await supabase.rpc("admin_move_node" as any, { _table: level, _id: id, _new_parent: newParent });
+    if (error) toast.error(error.message); else { toast.success("Moved"); setMoving(null); refresh(); }
+  };
+
+  const sortActive = (arr: any[] = []) => arr.filter(x => !x.deleted_at).sort((a,b)=>a.order_index-b.order_index);
+  const toggle = (k: string) => setExpanded(p => ({ ...p, [k]: !p[k] }));
 
   return (
     <AdminShell>
-      <h1 className="mb-2 text-3xl font-bold">Academic content</h1>
-      <div className="mb-6 flex flex-wrap items-center gap-2 text-sm">
-        {path.map((c, i) => (
-          <span key={i} className="flex items-center gap-2">
-            {i > 0 && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-            <button
-              onClick={() => setPath(path.slice(0, i + 1))}
-              className={`rounded px-2 py-1 ${i === path.length - 1 ? "bg-accent font-semibold" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              {c.label}
-            </button>
-          </span>
-        ))}
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Academic content</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Year → Module → Subject → Section → Lecture. Everything is dynamic.</p>
+        </div>
+        <button
+          onClick={() => setEditing({ level: "academic_years" })}
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
+          <Plus className="h-4 w-4" /> Add Year
+        </button>
       </div>
 
-      {current.kind === "years" && (
-        <List
-          title="Academic years"
-          table="academic_years"
-          fields={[{ key: "name", label: "Name" }, { key: "order_index", label: "Order", type: "number" }]}
-          onOpen={(row) => setPath([...path, { kind: "year", id: row.id, label: row.name }])}
-        />
+      {isLoading ? (
+        <div className="grid h-40 place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+      ) : (
+        <div className="space-y-2">
+          {sortActive(tree as any[]).map((year: any) => {
+            const yk = `y:${year.id}`;
+            const semesters = sortActive(year.semesters);
+            return (
+              <div key={year.id} className="rounded-xl border border-border bg-card">
+                <Row
+                  level="academic_years"
+                  row={year}
+                  expanded={!!expanded[yk]}
+                  hasChildren
+                  onToggle={() => toggle(yk)}
+                  onAdd={() => setEditing({ level: "semesters", parentId: year.id })}
+                  onEdit={() => setEditing({ level: "academic_years", row: year })}
+                  onDelete={() => softDelete("academic_years", year.id, year.name)}
+                  onUp={() => reorder("academic_years", tree as any[], year.id, -1)}
+                  onDown={() => reorder("academic_years", tree as any[], year.id, 1)}
+                  onMove={() => setMoving({ level: "academic_years", id: year.id })}
+                  movable={false}
+                />
+                {expanded[yk] && (
+                  <div className="border-t border-border pl-6">
+                    {semesters.length === 0 && <Empty label="No modules" onAdd={() => setEditing({ level: "semesters", parentId: year.id })} addLabel="Add Module" />}
+                    {semesters.map((mod: any) => {
+                      const mk = `m:${mod.id}`;
+                      const subjects = sortActive(mod.subjects);
+                      return (
+                        <div key={mod.id} className="border-b border-border last:border-0">
+                          <Row
+                            level="semesters"
+                            row={mod}
+                            expanded={!!expanded[mk]}
+                            hasChildren
+                            onToggle={() => toggle(mk)}
+                            onAdd={() => setEditing({ level: "subjects", parentId: mod.id })}
+                            onEdit={() => setEditing({ level: "semesters", row: mod, parentId: year.id })}
+                            onDelete={() => softDelete("semesters", mod.id, mod.name)}
+                            onUp={() => reorder("semesters", year.semesters, mod.id, -1)}
+                            onDown={() => reorder("semesters", year.semesters, mod.id, 1)}
+                            onMove={() => setMoving({ level: "semesters", id: mod.id })}
+                          />
+                          {expanded[mk] && (
+                            <div className="pl-6 pb-2">
+                              {subjects.length === 0 && <Empty label="No subjects" onAdd={() => setEditing({ level: "subjects", parentId: mod.id })} addLabel="Add Subject" />}
+                              {subjects.map((subj: any) => {
+                                const sk = `s:${subj.id}`;
+                                const sections = sortActive(subj.sections);
+                                return (
+                                  <div key={subj.id} className="border-b border-dashed border-border last:border-0">
+                                    <Row
+                                      level="subjects"
+                                      row={subj}
+                                      expanded={!!expanded[sk]}
+                                      hasChildren
+                                      onToggle={() => toggle(sk)}
+                                      onAdd={() => setEditing({ level: "sections", parentId: subj.id })}
+                                      onEdit={() => setEditing({ level: "subjects", row: subj, parentId: mod.id })}
+                                      onDelete={() => softDelete("subjects", subj.id, subj.name)}
+                                      onUp={() => reorder("subjects", mod.subjects, subj.id, -1)}
+                                      onDown={() => reorder("subjects", mod.subjects, subj.id, 1)}
+                                      onMove={() => setMoving({ level: "subjects", id: subj.id })}
+                                    />
+                                    {expanded[sk] && (
+                                      <div className="pl-6 pb-2">
+                                        {sections.length === 0 && <Empty label="No sections" onAdd={() => setEditing({ level: "sections", parentId: subj.id })} addLabel="Add Section" />}
+                                        {sections.map((sec: any) => {
+                                          const seck = `sec:${sec.id}`;
+                                          const lectures = sortActive(sec.lectures);
+                                          return (
+                                            <div key={sec.id} className="border-b border-dotted border-border last:border-0">
+                                              <Row
+                                                level="sections"
+                                                row={sec}
+                                                expanded={!!expanded[seck]}
+                                                hasChildren
+                                                badge={sec.kind}
+                                                onToggle={() => toggle(seck)}
+                                                onAdd={() => setEditing({ level: "lectures", parentId: sec.id })}
+                                                onEdit={() => setEditing({ level: "sections", row: sec, parentId: subj.id })}
+                                                onDelete={() => softDelete("sections", sec.id, sec.name)}
+                                                onUp={() => reorder("sections", subj.sections, sec.id, -1)}
+                                                onDown={() => reorder("sections", subj.sections, sec.id, 1)}
+                                                onMove={() => setMoving({ level: "sections", id: sec.id })}
+                                              />
+                                              {expanded[seck] && (
+                                                <div className="pl-6 pb-2">
+                                                  {lectures.length === 0 && <Empty label="No lectures" onAdd={() => setEditing({ level: "lectures", parentId: sec.id })} addLabel="Add Lecture" />}
+                                                  {lectures.map((lec: any) => (
+                                                    <Row
+                                                      key={lec.id}
+                                                      level="lectures"
+                                                      row={lec}
+                                                      expanded={false}
+                                                      onToggle={() => {}}
+                                                      onAdd={() => {}}
+                                                      onEdit={() => setEditing({ level: "lectures", row: lec, parentId: sec.id })}
+                                                      onDelete={() => softDelete("lectures", lec.id, lec.name)}
+                                                      onUp={() => reorder("lectures", sec.lectures, lec.id, -1)}
+                                                      onDown={() => reorder("lectures", sec.lectures, lec.id, 1)}
+                                                      onMove={() => setMoving({ level: "lectures", id: lec.id })}
+                                                      hasChildren={false}
+                                                    />
+                                                  ))}
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {!tree?.length && <Empty label="No academic years yet" onAdd={() => setEditing({ level: "academic_years" })} addLabel="Add Year" />}
+        </div>
       )}
-      {current.kind === "year" && current.id && (
-        <List
-          title="Semesters"
-          table="semesters"
-          parentKey="year_id"
-          parentId={current.id}
-          fields={[{ key: "name", label: "Name" }, { key: "order_index", label: "Order", type: "number" }]}
-          onOpen={(row) => setPath([...path, { kind: "semester", id: row.id, label: row.name }])}
-        />
-      )}
-      {current.kind === "semester" && current.id && (
-        <List
-          title="Subjects"
-          table="subjects"
-          parentKey="semester_id"
-          parentId={current.id}
-          fields={[
-            { key: "name", label: "Name" },
-            { key: "description", label: "Description" },
-            { key: "order_index", label: "Order", type: "number" },
-          ]}
-          onOpen={(row) => setPath([...path, { kind: "subject", id: row.id, label: row.name }])}
-        />
-      )}
-      {current.kind === "subject" && current.id && (
-        <>
-          <List
-            title="Chapters"
-            table="chapters"
-            parentKey="subject_id"
-            parentId={current.id}
-            fields={[{ key: "name", label: "Name" }, { key: "order_index", label: "Order", type: "number" }]}
-            onOpen={(row) => setPath([...path, { kind: "chapter", id: row.id, label: row.name }])}
-          />
-          <div className="mt-8">
-            <List
-              title="Sections (Spotters, Written, ...)"
-              table="sections"
-              parentKey="subject_id"
-              parentId={current.id}
-              fields={[
-                { key: "name", label: "Name" },
-                {
-                  key: "kind",
-                  label: "Kind",
-                  type: "select",
-                  options: [
-                    "question_bank", "formative", "previous_years", "mock_exam",
-                    "revision", "practical", "spotters", "assignments", "ospe", "custom",
-                  ],
-                },
-              ]}
-            />
-          </div>
-        </>
-      )}
-      {current.kind === "chapter" && current.id && (
-        <List
-          title="Lectures"
-          table="lectures"
-          parentKey="chapter_id"
-          parentId={current.id}
-          fields={[
-            { key: "name", label: "Name" },
-            { key: "description", label: "Description" },
-            { key: "order_index", label: "Order", type: "number" },
-          ]}
-        />
-      )}
+
+      {editing && <EditDialog state={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh(); }} />}
+      {moving && <MoveDialog state={moving} tree={tree as any[]} onClose={() => setMoving(null)} onMove={moveNode} />}
     </AdminShell>
   );
 }
 
-interface Field { key: string; label: string; type?: "text" | "number" | "select"; options?: string[] }
-
-function List({ title, table, parentKey, parentId, fields, onOpen }: {
-  title: string; table: string; parentKey?: string; parentId?: string; fields: Field[]; onOpen?: (row: any) => void;
-}) {
-  const qc = useQueryClient();
-  const queryKey = ["admin_list", table, parentId];
-  const [editing, setEditing] = useState<any | null>(null);
-  const [creating, setCreating] = useState(false);
-
-  const { data, isLoading } = useQuery({
-    queryKey,
-    queryFn: async () => {
-      let q = supabase.from(table as any).select("*");
-      if (parentKey && parentId) q = q.eq(parentKey, parentId);
-      const { data, error } = await q.order("order_index", { ascending: true }).order("created_at");
-      if (error) throw error;
-      return data as any[];
-    },
-  });
-
-  const save = async (form: any) => {
-    try {
-      const payload: any = { ...form };
-      fields.forEach((f) => { if (f.type === "number" && payload[f.key] !== undefined) payload[f.key] = Number(payload[f.key]) || 0; });
-      if (parentKey && parentId) payload[parentKey] = parentId;
-      if (editing) {
-        const { error } = await supabase.from(table as any).update(payload).eq("id", editing.id);
-        if (error) throw error;
-        toast.success("Updated");
-      } else {
-        const { error } = await supabase.from(table as any).insert(payload);
-        if (error) throw error;
-        toast.success("Added");
-      }
-      setEditing(null); setCreating(false);
-      qc.invalidateQueries({ queryKey });
-      qc.invalidateQueries({ queryKey: ["years_tree"] });
-    } catch (e: any) { toast.error(e.message); }
-  };
-
-  const remove = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this?")) return;
-    const { error } = await supabase.from(table as any).delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else { toast.success("Deleted"); qc.invalidateQueries({ queryKey }); qc.invalidateQueries({ queryKey: ["years_tree"] }); }
-  };
-
+function Row({
+  level, row, expanded, hasChildren, badge, onToggle, onAdd, onEdit, onDelete, onUp, onDown, onMove, movable = true,
+}: any) {
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{title}</h2>
-        <button onClick={() => setCreating(true)} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-          <Plus className="h-4 w-4" /> Add
+    <div className="flex items-center gap-2 px-3 py-2 hover:bg-accent/30">
+      {hasChildren ? (
+        <button onClick={onToggle} className="rounded p-1 hover:bg-accent">
+          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
-      </div>
-
-      {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
-      <div className="overflow-hidden rounded-xl border border-border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50">
-            <tr>
-              {fields.map(f => <th key={f.key} className="px-4 py-3 text-left font-medium text-muted-foreground">{f.label}</th>)}
-              <th className="w-32 px-4 py-3"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {data?.map((row) => (
-              <tr key={row.id} className="border-t border-border hover:bg-accent/30">
-                {fields.map(f => (
-                  <td key={f.key} className="px-4 py-3">
-                    {onOpen && f === fields[0]
-                      ? <button onClick={() => onOpen(row)} className="font-medium text-primary hover:underline">{row[f.key] || "—"}</button>
-                      : row[f.key] || "—"}
-                  </td>
-                ))}
-                <td className="flex justify-end gap-1 px-4 py-3">
-                  <button onClick={() => setEditing(row)} className="rounded p-1.5 hover:bg-accent"><Pencil className="h-4 w-4" /></button>
-                  <button onClick={() => remove(row.id)} className="rounded p-1.5 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
-                </td>
-              </tr>
-            ))}
-            {data?.length === 0 && (
-              <tr><td colSpan={fields.length + 1} className="px-4 py-6 text-center text-sm text-muted-foreground">No data</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {(creating || editing) && (
-        <RowDialog
-          fields={fields}
-          initial={editing}
-          onClose={() => { setEditing(null); setCreating(false); }}
-          onSave={save}
-        />
+      ) : <span className="w-6" />}
+      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">{LABEL[level as Level]}</span>
+      <span className="flex-1 truncate text-sm font-medium">{row.name}</span>
+      {badge && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">{badge}</span>}
+      <button onClick={onUp} className="rounded p-1 hover:bg-accent" title="Move up"><ArrowUp className="h-3.5 w-3.5" /></button>
+      <button onClick={onDown} className="rounded p-1 hover:bg-accent" title="Move down"><ArrowDown className="h-3.5 w-3.5" /></button>
+      {hasChildren && (
+        <button onClick={onAdd} className="rounded p-1 text-primary hover:bg-accent" title="Add child"><Plus className="h-3.5 w-3.5" /></button>
       )}
+      {movable && (
+        <button onClick={onMove} className="rounded p-1 hover:bg-accent" title="Move to another parent"><Move className="h-3.5 w-3.5" /></button>
+      )}
+      <button onClick={onEdit} className="rounded p-1 hover:bg-accent"><Pencil className="h-3.5 w-3.5" /></button>
+      <button onClick={onDelete} className="rounded p-1 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
     </div>
   );
 }
 
-function RowDialog({ fields, initial, onClose, onSave }: { fields: Field[]; initial: any; onClose: () => void; onSave: (v: any) => void }) {
-  const [form, setForm] = useState<any>(initial || {});
+function Empty({ label, onAdd, addLabel }: any) {
+  return (
+    <div className="flex items-center justify-between px-3 py-3 text-sm text-muted-foreground">
+      <span>{label}</span>
+      <button onClick={onAdd} className="flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-xs text-primary"><Plus className="h-3 w-3" /> {addLabel}</button>
+    </div>
+  );
+}
+
+function EditDialog({ state, onClose, onSaved }: any) {
+  const { level, row, parentId } = state;
+  const [name, setName] = useState(row?.name || "");
+  const [kind, setKind] = useState(row?.kind || "custom");
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!name.trim()) return toast.error("Name is required");
+    setSaving(true);
+    try {
+      const parentCol = PARENT_COL[level as Level];
+      const payload: any = { name };
+      if (level === "sections") payload.kind = kind;
+      if (row) {
+        const { error } = await supabase.from(level).update(payload).eq("id", row.id);
+        if (error) throw error;
+      } else {
+        if (parentCol && parentId) payload[parentCol] = parentId;
+        const { error } = await supabase.from(level).insert(payload);
+        if (error) throw error;
+      }
+      toast.success("Saved");
+      onSaved();
+    } catch (e: any) { toast.error(e.message); }
+    finally { setSaving(false); }
+  };
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-elegant" onClick={(e) => e.stopPropagation()}>
-        <h3 className="mb-4 text-lg font-bold">{initial ? "Edit" : "Add new"}</h3>
+        <h3 className="mb-4 text-lg font-bold">{row ? `Edit ${LABEL[level as Level]}` : `Add ${LABEL[level as Level]}`}</h3>
         <div className="space-y-3">
-          {fields.map(f => (
-            <div key={f.key}>
-              <label className="mb-1 block text-xs text-muted-foreground">{f.label}</label>
-              {f.type === "select" ? (
-                <select
-                  value={form[f.key] || ""}
-                  onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                  className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm"
-                >
-                  <option value="">-</option>
-                  {f.options?.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              ) : (
-                <input
-                  type={f.type || "text"}
-                  value={form[f.key] ?? ""}
-                  onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                  className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm"
-                />
-              )}
-            </div>
-          ))}
+          <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
+          {level === "sections" && (
+            <select value={kind} onChange={(e) => setKind(e.target.value)} className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
+              {SECTION_KINDS.map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+          )}
         </div>
         <div className="mt-6 flex justify-end gap-2">
           <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm">Cancel</button>
-          <button onClick={() => onSave(form)} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Save</button>
+          <button onClick={save} disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">{saving ? "..." : "Save"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MoveDialog({ state, tree, onClose, onMove }: any) {
+  const { level, id } = state;
+  // Build candidate parent list based on target level
+  const candidates = useMemo(() => {
+    const targetParent = PARENT_COL[level as Level];
+    if (!targetParent) return [] as { id: string; label: string }[];
+    const out: { id: string; label: string }[] = [];
+    for (const y of (tree || [])) {
+      if (level === "semesters") out.push({ id: y.id, label: y.name });
+      for (const m of (y.semesters || []).filter((x: any) => !x.deleted_at)) {
+        if (level === "subjects") out.push({ id: m.id, label: `${y.name} › ${m.name}` });
+        for (const s of (m.subjects || []).filter((x: any) => !x.deleted_at)) {
+          if (level === "sections") out.push({ id: s.id, label: `${y.name} › ${m.name} › ${s.name}` });
+          for (const sec of (s.sections || []).filter((x: any) => !x.deleted_at)) {
+            if (level === "lectures") out.push({ id: sec.id, label: `${y.name} › ${m.name} › ${s.name} › ${sec.name}` });
+          }
+        }
+      }
+    }
+    return out;
+  }, [tree, level]);
+  const [target, setTarget] = useState("");
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={onClose}>
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-elegant" onClick={(e) => e.stopPropagation()}>
+        <h3 className="mb-4 text-lg font-bold">Move to another parent</h3>
+        <select value={target} onChange={(e) => setTarget(e.target.value)} className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
+          <option value="">Select destination…</option>
+          {candidates.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+        </select>
+        <div className="mt-6 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm">Cancel</button>
+          <button onClick={() => target && onMove(level, id, target)} disabled={!target} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">Move</button>
         </div>
       </div>
     </div>

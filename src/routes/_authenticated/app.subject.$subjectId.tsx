@@ -2,24 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
-import { BookOpen, FileQuestion, Brain, History as HistoryIcon, ClipboardCheck, Star } from "lucide-react";
+import { BookOpen, FolderOpen, Play } from "lucide-react";
 import { MistakesSection } from "@/components/mistakes-section";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/app/subject/$subjectId")({
   component: SubjectPage,
 });
-
-const sectionCards = [
-  { kind: "question_bank", label: "Question Bank", icon: FileQuestion, color: "text-primary" },
-  { kind: "formative", label: "Formative", icon: Brain, color: "text-warning" },
-  { kind: "previous_years", label: "Previous Years", icon: HistoryIcon, color: "text-success" },
-  { kind: "mock_exam", label: "Mock Exams", icon: ClipboardCheck, color: "text-primary" },
-  { kind: "revision", label: "Revision", icon: Star, color: "text-warning" },
-  { kind: "practical", label: "Practical", icon: BookOpen, color: "text-success" },
-  { kind: "spotters", label: "Spotters", icon: BookOpen, color: "text-primary" },
-  { kind: "ospe", label: "Written", icon: BookOpen, color: "text-warning" },
-  { kind: "assignments", label: "Assignments", icon: BookOpen, color: "text-success" },
-];
 
 function SubjectPage() {
   const { subjectId } = Route.useParams();
@@ -28,29 +17,49 @@ function SubjectPage() {
   const { data: subject } = useQuery({
     queryKey: ["subject", subjectId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("subjects").select("*, chapters(id, name, name_ar, order_index, lectures(id, name, name_ar, order_index))").eq("id", subjectId).single();
+      const { data, error } = await supabase
+        .from("subjects")
+        .select("id, name, description, sections(id, name, kind, order_index, deleted_at, lectures(id, name, order_index, deleted_at))")
+        .eq("id", subjectId)
+        .is("deleted_at", null)
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
   });
 
-  const startQuiz = async (filters: { source_kind?: string; chapter_id?: string; lecture_id?: string }) => {
-    let q = supabase.from("questions").select("id").eq("subject_id", subjectId);
-    if (filters.source_kind) q = q.eq("source_kind", filters.source_kind as any);
-    if (filters.chapter_id) q = q.eq("chapter_id", filters.chapter_id);
-    if (filters.lecture_id) q = q.eq("lecture_id", filters.lecture_id);
-    const { data } = await q.limit(200);
-    const ids = (data || []).map((x) => x.id);
+  const startQuiz = async (filters: { lecture_id?: string; section_id?: string; source_kind?: string; title?: string }) => {
+    let ids: string[] = [];
+    if (filters.lecture_id) {
+      // pull through reuse junction so the same question appears across lectures
+      const { data } = await supabase
+        .from("question_lectures" as any)
+        .select("question_id, questions!inner(id, deleted_at)")
+        .eq("lecture_id", filters.lecture_id)
+        .limit(500);
+      ids = ((data as any[]) || [])
+        .filter((r) => !r.questions?.deleted_at)
+        .map((r) => r.question_id);
+    } else {
+      let q = supabase.from("questions").select("id").eq("subject_id", subjectId).is("deleted_at", null);
+      if (filters.section_id) q = q.eq("section_id", filters.section_id);
+      if (filters.source_kind) q = q.eq("source_kind", filters.source_kind as any);
+      const { data } = await q.limit(500);
+      ids = (data || []).map((x) => x.id);
+    }
     if (!ids.length) {
-      alert("No questions yet in this section.");
+      toast.error("No questions in this selection yet.");
       return;
     }
-    // Shuffle for randomness
     ids.sort(() => Math.random() - 0.5);
     sessionStorage.setItem("quiz_ids", JSON.stringify(ids));
-    sessionStorage.setItem("quiz_meta", JSON.stringify({ subjectId, ...filters, title: subject?.name }));
+    sessionStorage.setItem("quiz_meta", JSON.stringify({ subjectId, ...filters, title: filters.title || subject?.name }));
     navigate({ to: "/app/quiz" });
   };
+
+  const sections = ((subject as any)?.sections || [])
+    .filter((s: any) => !s.deleted_at)
+    .sort((a: any, b: any) => a.order_index - b.order_index);
 
   return (
     <AppShell>
@@ -61,61 +70,62 @@ function SubjectPage() {
       </div>
 
       <h2 className="mb-3 text-lg font-semibold">Sections</h2>
-      <div className="mb-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {sectionCards.map((s) => (
-          <button
-            key={s.kind}
-            onClick={() => startQuiz({ source_kind: s.kind })}
-            className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition hover:border-primary/50"
-          >
-            <div className={`grid h-10 w-10 place-items-center rounded-lg bg-primary/10 ${s.color}`}>
-              <s.icon className="h-5 w-5" />
-            </div>
-            <span className="font-medium">{s.label}</span>
-          </button>
-        ))}
+      <div className="mb-10 space-y-3">
+        {sections.length === 0 && (
+          <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+            No sections yet. An admin can add Question Bank, Formatives, OSPE, Past Papers, or any custom section.
+          </p>
+        )}
+        {sections.map((sec: any) => {
+          const lectures = (sec.lectures || [])
+            .filter((l: any) => !l.deleted_at)
+            .sort((a: any, b: any) => a.order_index - b.order_index);
+          return (
+            <details key={sec.id} className="rounded-xl border border-border bg-card" open>
+              <summary className="flex cursor-pointer items-center justify-between gap-3 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/10 text-primary">
+                    <FolderOpen className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="font-semibold">{sec.name}</div>
+                    <div className="text-xs text-muted-foreground">{lectures.length} lecture{lectures.length === 1 ? "" : "s"}</div>
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => { e.preventDefault(); startQuiz({ section_id: sec.id, title: `${subject?.name} · ${sec.name}` }); }}
+                  className="rounded-md bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground"
+                >
+                  Section exam
+                </button>
+              </summary>
+              <div className="border-t border-border p-3">
+                {lectures.length === 0 ? (
+                  <p className="px-2 py-3 text-sm text-muted-foreground">No lectures yet</p>
+                ) : (
+                  <ul className="space-y-1">
+                    {lectures.map((lec: any) => (
+                      <li key={lec.id} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-accent">
+                        <span className="flex items-center gap-2 text-sm">
+                          <BookOpen className="h-3.5 w-3.5 text-muted-foreground" /> {lec.name}
+                        </span>
+                        <button
+                          onClick={() => startQuiz({ lecture_id: lec.id, title: `${subject?.name} · ${lec.name}` })}
+                          className="flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                        >
+                          <Play className="h-3 w-3" /> Start
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </details>
+          );
+        })}
       </div>
 
       <MistakesSection subjectId={subjectId} />
-
-      <h2 className="mb-3 text-lg font-semibold">Chapters & Lectures</h2>
-      <div className="space-y-3">
-        {(subject?.chapters || []).sort((a: any, b: any) => a.order_index - b.order_index).map((ch: any) => (
-          <details key={ch.id} className="rounded-xl border border-border bg-card">
-            <summary className="flex cursor-pointer items-center justify-between p-4 font-medium">
-              <span>{ch.name}</span>
-              <button
-                onClick={(e) => { e.preventDefault(); startQuiz({ chapter_id: ch.id }); }}
-                className="rounded-md bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary hover:text-primary-foreground"
-              >
-                Chapter exam
-              </button>
-            </summary>
-            <div className="border-t border-border p-3">
-              {(ch.lectures || []).length === 0 ? (
-                <p className="px-2 py-3 text-sm text-muted-foreground">No lectures yet</p>
-              ) : (
-                <ul className="space-y-1">
-                  {ch.lectures.sort((a: any, b: any) => a.order_index - b.order_index).map((lec: any) => (
-                    <li key={lec.id} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-accent">
-                      <span className="text-sm">{lec.name}</span>
-                      <button
-                        onClick={() => startQuiz({ lecture_id: lec.id })}
-                        className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
-                      >
-                        Start quiz
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </details>
-        ))}
-        {!(subject?.chapters || []).length && (
-          <p className="text-sm text-muted-foreground">No chapters yet.</p>
-        )}
-      </div>
     </AppShell>
   );
 }

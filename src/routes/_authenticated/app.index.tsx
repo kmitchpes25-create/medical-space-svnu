@@ -31,7 +31,8 @@ function AppHome() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("academic_years")
-        .select("id, name, name_ar, order_index, semesters(id, name, name_ar, order_index, subjects(id, name, name_ar, order_index))")
+        .select("id, name, order_index, semesters(id, name, order_index, subjects(id, name, order_index))")
+        .is("deleted_at", null)
         .order("order_index");
       if (error) throw error;
       return data;
@@ -44,49 +45,60 @@ function AppHome() {
     <AppShell>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">
-            Welcome {name ? `Dr. ${name}` : "Doctor"} 👋
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">Pick an academic year to get started</p>
+          <h1 className="text-3xl font-bold">Welcome {name ? `Dr. ${name}` : "Doctor"} 👋</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Pick a year, module, and subject to start studying</p>
         </div>
         <StreakBadge />
       </div>
 
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1,2,3].map(i => <div key={i} className="h-40 animate-pulse rounded-xl bg-card" />)}
+          {[1, 2, 3].map((i) => <div key={i} className="h-40 animate-pulse rounded-xl bg-card" />)}
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {years?.map((y: any) => (
             <section key={y.id}>
-              <h2 className="mb-3 text-lg font-semibold">{y.name}</h2>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {(y.semesters || []).flatMap((s: any) =>
-                  (s.subjects || []).map((sub: any) => (
-                    <Link
-                      key={sub.id}
-                      to="/app/subject/$subjectId"
-                      params={{ subjectId: sub.id }}
-                      className="group rounded-xl border border-border bg-card p-5 transition hover:border-primary/50 hover:shadow-elegant"
-                    >
-                      <div className="mb-3 flex items-center justify-between">
-                        <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary">
-                          <BookOpen className="h-5 w-5" />
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
-                      </div>
-                      <h3 className="font-semibold">{sub.name}</h3>
-                      <p className="mt-1 text-xs text-muted-foreground">{s.name}</p>
-                    </Link>
-                  ))
-                )}
-                {(y.semesters || []).every((s: any) => !s.subjects?.length) && (
-                  <p className="text-sm text-muted-foreground">No subjects yet. An admin can add subjects from the admin panel.</p>
+              <h2 className="mb-4 text-lg font-semibold">{y.name}</h2>
+              <div className="space-y-6">
+                {(y.semesters || []).sort((a: any, b: any) => a.order_index - b.order_index).map((mod: any) => (
+                  <div key={mod.id}>
+                    <h3 className="mb-2 text-sm font-medium text-muted-foreground">{mod.name}</h3>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {(mod.subjects || []).sort((a: any, b: any) => a.order_index - b.order_index).map((sub: any) => (
+                        <Link
+                          key={sub.id}
+                          to="/app/subject/$subjectId"
+                          params={{ subjectId: sub.id }}
+                          className="group rounded-xl border border-border bg-card p-5 transition hover:border-primary/50 hover:shadow-elegant"
+                        >
+                          <div className="mb-3 flex items-center justify-between">
+                            <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary">
+                              <BookOpen className="h-5 w-5" />
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
+                          </div>
+                          <h4 className="font-semibold">{sub.name}</h4>
+                          <p className="mt-1 text-xs text-muted-foreground">{mod.name}</p>
+                        </Link>
+                      ))}
+                      {!(mod.subjects || []).length && (
+                        <p className="text-sm text-muted-foreground">No subjects in this module yet.</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {!(y.semesters || []).length && (
+                  <p className="text-sm text-muted-foreground">No modules in this year yet.</p>
                 )}
               </div>
             </section>
           ))}
+          {!years?.length && (
+            <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+              No content yet. An admin can add years, modules, and subjects from the admin panel.
+            </p>
+          )}
         </div>
       )}
     </AppShell>

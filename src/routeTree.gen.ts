@@ -21,6 +21,7 @@ import { Route as AuthenticatedAppHighlightsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppFavoritesRouteImport } from './routes/_authenticated/app.favorites'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin/upload'
+import { Route as AuthenticatedAdminRecoveryRouteImport } from './routes/_authenticated/admin/recovery'
 import { Route as AuthenticatedAdminQuestionsRouteImport } from './routes/_authenticated/admin/questions'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin/content'
 import { Route as AuthenticatedAppSubjectSubjectIdRouteImport } from './routes/_authenticated/app.subject.$subjectId'
@@ -88,6 +89,12 @@ const AuthenticatedAdminUploadRoute =
     path: '/upload',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminRecoveryRoute =
+  AuthenticatedAdminRecoveryRouteImport.update({
+    id: '/recovery',
+    path: '/recovery',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminQuestionsRoute =
   AuthenticatedAdminQuestionsRouteImport.update({
     id: '/questions',
@@ -119,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/admin/content': typeof AuthenticatedAdminContentRoute
   '/admin/questions': typeof AuthenticatedAdminQuestionsRoute
+  '/admin/recovery': typeof AuthenticatedAdminRecoveryRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/app/favorites': typeof AuthenticatedAppFavoritesRoute
@@ -135,6 +143,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/admin/content': typeof AuthenticatedAdminContentRoute
   '/admin/questions': typeof AuthenticatedAdminQuestionsRoute
+  '/admin/recovery': typeof AuthenticatedAdminRecoveryRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/app/favorites': typeof AuthenticatedAppFavoritesRoute
@@ -154,6 +163,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/admin/content': typeof AuthenticatedAdminContentRoute
   '/_authenticated/admin/questions': typeof AuthenticatedAdminQuestionsRoute
+  '/_authenticated/admin/recovery': typeof AuthenticatedAdminRecoveryRoute
   '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/app/favorites': typeof AuthenticatedAppFavoritesRoute
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/content'
     | '/admin/questions'
+    | '/admin/recovery'
     | '/admin/upload'
     | '/admin/users'
     | '/app/favorites'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin/content'
     | '/admin/questions'
+    | '/admin/recovery'
     | '/admin/upload'
     | '/admin/users'
     | '/app/favorites'
@@ -207,6 +219,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/admin/content'
     | '/_authenticated/admin/questions'
+    | '/_authenticated/admin/recovery'
     | '/_authenticated/admin/upload'
     | '/_authenticated/admin/users'
     | '/_authenticated/app/favorites'
@@ -311,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUploadRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/recovery': {
+      id: '/_authenticated/admin/recovery'
+      path: '/recovery'
+      fullPath: '/admin/recovery'
+      preLoaderRoute: typeof AuthenticatedAdminRecoveryRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/questions': {
       id: '/_authenticated/admin/questions'
       path: '/questions'
@@ -345,6 +365,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminContentRoute: typeof AuthenticatedAdminContentRoute
   AuthenticatedAdminQuestionsRoute: typeof AuthenticatedAdminQuestionsRoute
+  AuthenticatedAdminRecoveryRoute: typeof AuthenticatedAdminRecoveryRoute
   AuthenticatedAdminUploadRoute: typeof AuthenticatedAdminUploadRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -354,6 +375,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
   {
     AuthenticatedAdminContentRoute: AuthenticatedAdminContentRoute,
     AuthenticatedAdminQuestionsRoute: AuthenticatedAdminQuestionsRoute,
+    AuthenticatedAdminRecoveryRoute: AuthenticatedAdminRecoveryRoute,
     AuthenticatedAdminUploadRoute: AuthenticatedAdminUploadRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
@@ -397,3 +419,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
