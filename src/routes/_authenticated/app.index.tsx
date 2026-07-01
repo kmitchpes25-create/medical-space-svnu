@@ -70,10 +70,10 @@ function AppHome() {
                           key={sub.id}
                           to="/app/subject/$subjectId"
                           params={{ subjectId: sub.id }}
-                          className="group rounded-xl border border-border bg-card p-5 transition hover:border-primary/50 hover:shadow-elegant"
+                          className="group hover-lift animate-fade-in rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/60 hover:shadow-glow"
                         >
                           <div className="mb-3 flex items-center justify-between">
-                            <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary">
+                            <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary shadow-glow">
                               <BookOpen className="h-5 w-5" />
                             </div>
                             <ChevronRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
