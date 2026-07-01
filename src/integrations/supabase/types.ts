@@ -270,6 +270,89 @@ export type Database = {
           },
         ]
       }
+      leaderboard_scores: {
+        Row: {
+          correct_answers: number
+          current_streak: number
+          last_event_at: string
+          season_id: string
+          total_points: number
+          user_id: string
+          year_id: string
+        }
+        Insert: {
+          correct_answers?: number
+          current_streak?: number
+          last_event_at?: string
+          season_id: string
+          total_points?: number
+          user_id: string
+          year_id: string
+        }
+        Update: {
+          correct_answers?: number
+          current_streak?: number
+          last_event_at?: string
+          season_id?: string
+          total_points?: number
+          user_id?: string
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_scores_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leaderboard_scores_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leaderboard_seasons: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          is_current: boolean
+          name: string
+          started_at: string
+          year_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          is_current?: boolean
+          name?: string
+          started_at?: string
+          year_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          is_current?: boolean
+          name?: string
+          started_at?: string
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_seasons_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lectures: {
         Row: {
           chapter_id: string | null
@@ -382,6 +465,57 @@ export type Database = {
           },
         ]
       }
+      point_events: {
+        Row: {
+          created_at: string
+          dedupe_key: string
+          id: string
+          kind: string
+          meta: Json | null
+          points: number
+          season_id: string
+          user_id: string
+          year_id: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key: string
+          id?: string
+          kind: string
+          meta?: Json | null
+          points: number
+          season_id: string
+          user_id: string
+          year_id: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string
+          id?: string
+          kind?: string
+          meta?: Json | null
+          points?: number
+          season_id?: string
+          user_id?: string
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_events_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_events_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -390,6 +524,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_banned: boolean
+          primary_year_id: string | null
           updated_at: string
         }
         Insert: {
@@ -399,6 +534,7 @@ export type Database = {
           full_name?: string | null
           id: string
           is_banned?: boolean
+          primary_year_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -408,9 +544,18 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_banned?: boolean
+          primary_year_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_primary_year_id_fkey"
+            columns: ["primary_year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       question_lectures: {
         Row: {
@@ -622,6 +767,35 @@ export type Database = {
           },
         ]
       }
+      study_minutes: {
+        Row: {
+          day: string
+          minutes: number
+          user_id: string
+          year_id: string
+        }
+        Insert: {
+          day: string
+          minutes?: number
+          user_id: string
+          year_id: string
+        }
+        Update: {
+          day?: string
+          minutes?: number
+          user_id?: string
+          year_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_minutes_year_id_fkey"
+            columns: ["year_id"]
+            isOneToOne: false
+            referencedRelation: "academic_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subjects: {
         Row: {
           color: string | null
@@ -724,6 +898,7 @@ export type Database = {
         Args: { _ids: string[]; _table: string }
         Returns: undefined
       }
+      admin_reset_leaderboard: { Args: { _year: string }; Returns: string }
       admin_restore: {
         Args: { _id: string; _table: string }
         Returns: undefined
@@ -732,6 +907,19 @@ export type Database = {
         Args: { _id: string; _table: string }
         Returns: undefined
       }
+      award_points: {
+        Args: {
+          _dedupe: string
+          _increment_correct?: number
+          _kind: string
+          _meta?: Json
+          _points: number
+          _user: string
+          _year: string
+        }
+        Returns: boolean
+      }
+      award_quiz_submit: { Args: { _attempt_id: string }; Returns: undefined }
       bump_streak: {
         Args: never
         Returns: {
@@ -747,6 +935,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      ensure_current_season: { Args: { _year_id: string }; Returns: string }
       get_choices_admin: {
         Args: { _qids: string[] }
         Returns: {
@@ -755,6 +944,20 @@ export type Database = {
           order_index: number
           question_id: string
           text: string
+        }[]
+      }
+      get_leaderboard: {
+        Args: { _year: string }
+        Returns: {
+          avatar_url: string
+          correct_answers: number
+          current_streak: number
+          full_name: string
+          is_me: boolean
+          last_event_at: string
+          rank: number
+          total_points: number
+          user_id: string
         }[]
       }
       grade_questions: {
@@ -775,6 +978,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      record_study_heartbeat: { Args: { _year?: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "student"
