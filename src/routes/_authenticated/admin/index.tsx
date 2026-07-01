@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin-shell";
-import { Users, FileQuestion, Layers, Upload, BookOpen } from "lucide-react";
+import { Users, FileQuestion, Layers, Upload, BookOpen, Trophy, RotateCcw } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminHome,
@@ -70,6 +72,60 @@ function AdminHome() {
           <p className="mt-1 text-xs text-muted-foreground">Grant/revoke admin and ban users</p>
         </Link>
       </div>
+
+      <LeaderboardResetSection />
     </AdminShell>
+  );
+}
+
+function LeaderboardResetSection() {
+  const { data: years } = useQuery({
+    queryKey: ["admin_years"],
+    queryFn: async () => {
+      const { data } = await supabase.from("academic_years").select("id, name").is("deleted_at", null).order("order_index");
+      return data || [];
+    },
+  });
+  const [selected, setSelected] = useState<string>("");
+  const [busy, setBusy] = useState(false);
+
+  const doReset = async () => {
+    if (!selected) return;
+    if (!confirm("Reset the leaderboard for this year? All students will restart from 0 in a new season. Historical events are preserved.")) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_reset_leaderboard" as any, { _year: selected } as any);
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else toast.success("New season started — scores reset to 0");
+  };
+
+  return (
+    <div className="mt-10 rounded-xl border border-border bg-card p-6">
+      <div className="mb-4 flex items-center gap-2">
+        <Trophy className="h-5 w-5 text-warning" />
+        <h3 className="font-semibold">Leaderboard control</h3>
+      </div>
+      <p className="mb-4 text-xs text-muted-foreground">
+        Start a new monthly season for a specific academic year. All current scores become 0 while the historical ledger is preserved.
+      </p>
+      <div className="flex flex-wrap items-center gap-3">
+        <select
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+        >
+          <option value="">Select a year…</option>
+          {(years || []).map((y: any) => <option key={y.id} value={y.id}>{y.name}</option>)}
+        </select>
+        <button
+          onClick={doReset}
+          disabled={!selected || busy}
+          className="inline-flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition hover:opacity-90 disabled:opacity-50"
+        >
+          <RotateCcw className="h-4 w-4" />
+          {busy ? "Resetting…" : "Reset & start new season"}
+        </button>
+      </div>
+    </div>
   );
 }

@@ -3,19 +3,22 @@ import { type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Home, LogOut, Settings, Stethoscope, Star, History,
+  Home, LogOut, Settings, Stethoscope, Star, History, Trophy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useStudyHeartbeat } from "@/hooks/use-study-heartbeat";
 
 const studentLinks = [
   { to: "/app", label: "Home", icon: Home },
+  { to: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/app/highlights", label: "Highlights", icon: Star },
   { to: "/app/favorites", label: "Favorites", icon: Star },
   { to: "/app/history", label: "My results", icon: History },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
+  useStudyHeartbeat();
   const navigate = useNavigate();
   const { data: isAdmin } = useQuery({
     queryKey: ["is_admin"],
@@ -35,7 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
+    <div className="flex min-h-screen bg-hero text-foreground transition-colors duration-300">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-4 md:flex">
         <Link to="/app" className="mb-8 flex items-center gap-2 px-2">
           <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-glow">
