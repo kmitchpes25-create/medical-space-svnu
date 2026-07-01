@@ -161,7 +161,7 @@ function QuizPage() {
       sessionStorage.removeItem("quiz_ids");
       sessionStorage.removeItem("quiz_meta");
       // Award points server-side (best-effort — don't block navigation on failure)
-      supabase.rpc("award_quiz_submit" as any, { _attempt_id: attempt.id } as any).catch(() => {});
+      void supabase.rpc("award_quiz_submit" as any, { _attempt_id: attempt.id } as any).then(() => {}, () => {});
       navigate({ to: "/app/result/$attemptId", params: { attemptId: attempt.id } });
     } catch (err: any) {
       toast.error(err.message);
