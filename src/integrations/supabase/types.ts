@@ -890,6 +890,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_hard_delete: {
+        Args: { _id: string; _table: string }
+        Returns: undefined
+      }
       admin_move_node: {
         Args: { _id: string; _new_parent: string; _table: string }
         Returns: undefined

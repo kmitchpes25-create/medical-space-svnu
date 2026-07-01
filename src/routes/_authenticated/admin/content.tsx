@@ -58,8 +58,8 @@ function ContentTree() {
   const refresh = () => qc.invalidateQueries({ queryKey: ["content_tree"] });
 
   const softDelete = async (level: Level, id: string, name: string) => {
-    if (!confirm(`Soft-delete "${name}"? You can restore it from the Recovery page.`)) return;
-    const { error } = await supabase.rpc("admin_soft_delete" as any, { _table: level, _id: id });
+    if (!confirm(`Permanently delete "${name}" and ALL nested items, questions, choices and answers? This cannot be undone.`)) return;
+    const { error } = await supabase.rpc("admin_hard_delete" as any, { _table: level, _id: id });
     if (error) toast.error(error.message); else { toast.success("Deleted"); refresh(); }
   };
 
