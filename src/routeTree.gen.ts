@@ -16,6 +16,7 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAppQuizRouteImport } from './routes/_authenticated/app.quiz'
+import { Route as AuthenticatedAppLeaderboardRouteImport } from './routes/_authenticated/app.leaderboard'
 import { Route as AuthenticatedAppHistoryRouteImport } from './routes/_authenticated/app.history'
 import { Route as AuthenticatedAppHighlightsRouteImport } from './routes/_authenticated/app.highlights'
 import { Route as AuthenticatedAppFavoritesRouteImport } from './routes/_authenticated/app.favorites'
@@ -61,6 +62,12 @@ const AuthenticatedAppQuizRoute = AuthenticatedAppQuizRouteImport.update({
   path: '/app/quiz',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAppLeaderboardRoute =
+  AuthenticatedAppLeaderboardRouteImport.update({
+    id: '/app/leaderboard',
+    path: '/app/leaderboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppHistoryRoute = AuthenticatedAppHistoryRouteImport.update({
   id: '/app/history',
   path: '/app/history',
@@ -132,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/app/favorites': typeof AuthenticatedAppFavoritesRoute
   '/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
+  '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
   '/app/quiz': typeof AuthenticatedAppQuizRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
@@ -149,6 +157,7 @@ export interface FileRoutesByTo {
   '/app/favorites': typeof AuthenticatedAppFavoritesRoute
   '/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
+  '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
   '/app/quiz': typeof AuthenticatedAppQuizRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
@@ -169,6 +178,7 @@ export interface FileRoutesById {
   '/_authenticated/app/favorites': typeof AuthenticatedAppFavoritesRoute
   '/_authenticated/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/_authenticated/app/history': typeof AuthenticatedAppHistoryRoute
+  '/_authenticated/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
   '/_authenticated/app/quiz': typeof AuthenticatedAppQuizRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/app/favorites'
     | '/app/highlights'
     | '/app/history'
+    | '/app/leaderboard'
     | '/app/quiz'
     | '/admin/'
     | '/app/'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/app/favorites'
     | '/app/highlights'
     | '/app/history'
+    | '/app/leaderboard'
     | '/app/quiz'
     | '/admin'
     | '/app'
@@ -225,6 +237,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/favorites'
     | '/_authenticated/app/highlights'
     | '/_authenticated/app/history'
+    | '/_authenticated/app/leaderboard'
     | '/_authenticated/app/quiz'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
@@ -287,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/app/quiz'
       fullPath: '/app/quiz'
       preLoaderRoute: typeof AuthenticatedAppQuizRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/leaderboard': {
+      id: '/_authenticated/app/leaderboard'
+      path: '/app/leaderboard'
+      fullPath: '/app/leaderboard'
+      preLoaderRoute: typeof AuthenticatedAppLeaderboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app/history': {
@@ -391,6 +411,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppFavoritesRoute: typeof AuthenticatedAppFavoritesRoute
   AuthenticatedAppHighlightsRoute: typeof AuthenticatedAppHighlightsRoute
   AuthenticatedAppHistoryRoute: typeof AuthenticatedAppHistoryRoute
+  AuthenticatedAppLeaderboardRoute: typeof AuthenticatedAppLeaderboardRoute
   AuthenticatedAppQuizRoute: typeof AuthenticatedAppQuizRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppResultAttemptIdRoute: typeof AuthenticatedAppResultAttemptIdRoute
@@ -402,6 +423,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppFavoritesRoute: AuthenticatedAppFavoritesRoute,
   AuthenticatedAppHighlightsRoute: AuthenticatedAppHighlightsRoute,
   AuthenticatedAppHistoryRoute: AuthenticatedAppHistoryRoute,
+  AuthenticatedAppLeaderboardRoute: AuthenticatedAppLeaderboardRoute,
   AuthenticatedAppQuizRoute: AuthenticatedAppQuizRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppResultAttemptIdRoute: AuthenticatedAppResultAttemptIdRoute,
