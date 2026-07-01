@@ -75,14 +75,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button onClick={logout} className="flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition hover:bg-sidebar-accent">
             <LogOut className="h-4 w-4" /> Sign out
           </button>
-          <ThemeToggle />
         </div>
       </aside>
 
       <main className="flex-1 overflow-x-hidden">
-        <div className="flex items-center justify-end gap-2 border-b border-border bg-background/60 px-4 py-2 md:hidden">
-          <ThemeToggle />
-        </div>
+        <div className="mx-auto max-w-6xl p-4 sm:p-8">{children}</div>
         <div className="mx-auto max-w-6xl p-4 sm:p-8">{children}</div>
       </main>
     </div>
