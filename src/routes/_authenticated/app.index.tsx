@@ -45,7 +45,7 @@ function AppHome() {
     <AppShell>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Welcome {name ? `Dr. ${name}` : "Doctor"} 👋</h1>
+          <h1 className="text-3xl font-bold neon-text">Welcome {name ? `Dr. ${name}` : "Doctor"} 👋</h1>
           <p className="mt-1 text-sm text-muted-foreground">Pick a year, module, and subject to start studying</p>
         </div>
         <StreakBadge />
