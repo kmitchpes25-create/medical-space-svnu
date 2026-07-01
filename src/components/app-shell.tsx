@@ -18,6 +18,7 @@ const studentLinks = [
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
+  useStudyHeartbeat();
   const navigate = useNavigate();
   const { data: isAdmin } = useQuery({
     queryKey: ["is_admin"],
