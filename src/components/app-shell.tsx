@@ -6,7 +6,7 @@ import {
   Home, LogOut, Settings, Stethoscope, Star, History, Trophy,
 } from "lucide-react";
 import { toast } from "sonner";
-
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useStudyHeartbeat } from "@/hooks/use-study-heartbeat";
 
 const studentLinks = [
