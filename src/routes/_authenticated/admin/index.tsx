@@ -27,9 +27,9 @@ function AdminHome() {
     queryKey: ["admin_stats"],
     queryFn: async () => {
       const [years, subjects, questions, users] = await Promise.all([
-        supabase.from("academic_years").select("*", { count: "exact", head: true }),
-        supabase.from("subjects").select("*", { count: "exact", head: true }),
-        supabase.from("questions").select("*", { count: "exact", head: true }),
+        supabase.from("academic_years").select("*", { count: "exact", head: true }).is("deleted_at", null),
+        supabase.from("subjects").select("*", { count: "exact", head: true }).is("deleted_at", null),
+        supabase.from("questions").select("*", { count: "exact", head: true }).is("deleted_at", null),
         supabase.from("profiles").select("*", { count: "exact", head: true }),
       ]);
       return {
