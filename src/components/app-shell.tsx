@@ -1,12 +1,13 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Home, LogOut, Settings, Stethoscope, Star, History, Trophy, Timer,
+  Home, LogOut, Settings, Stethoscope, Star, History, Trophy, Timer, Phone,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { CallUsDialog } from "@/components/call-us-dialog";
 import { useStudyHeartbeat } from "@/hooks/use-study-heartbeat";
 
 const studentLinks = [
