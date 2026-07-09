@@ -16,6 +16,7 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAppQuizRouteImport } from './routes/_authenticated/app.quiz'
+import { Route as AuthenticatedAppPomodoroRouteImport } from './routes/_authenticated/app.pomodoro'
 import { Route as AuthenticatedAppLeaderboardRouteImport } from './routes/_authenticated/app.leaderboard'
 import { Route as AuthenticatedAppHistoryRouteImport } from './routes/_authenticated/app.history'
 import { Route as AuthenticatedAppHighlightsRouteImport } from './routes/_authenticated/app.highlights'
@@ -25,8 +26,10 @@ import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminRecoveryRouteImport } from './routes/_authenticated/admin/recovery'
 import { Route as AuthenticatedAdminQuestionsRouteImport } from './routes/_authenticated/admin/questions'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin/content'
+import { Route as AuthenticatedAppYearYearIdRouteImport } from './routes/_authenticated/app.year.$yearId'
 import { Route as AuthenticatedAppSubjectSubjectIdRouteImport } from './routes/_authenticated/app.subject.$subjectId'
 import { Route as AuthenticatedAppResultAttemptIdRouteImport } from './routes/_authenticated/app.result.$attemptId'
+import { Route as AuthenticatedAppModuleModuleIdRouteImport } from './routes/_authenticated/app.module.$moduleId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -62,6 +65,12 @@ const AuthenticatedAppQuizRoute = AuthenticatedAppQuizRouteImport.update({
   path: '/app/quiz',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAppPomodoroRoute =
+  AuthenticatedAppPomodoroRouteImport.update({
+    id: '/app/pomodoro',
+    path: '/app/pomodoro',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppLeaderboardRoute =
   AuthenticatedAppLeaderboardRouteImport.update({
     id: '/app/leaderboard',
@@ -114,6 +123,12 @@ const AuthenticatedAdminContentRoute =
     path: '/content',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAppYearYearIdRoute =
+  AuthenticatedAppYearYearIdRouteImport.update({
+    id: '/app/year/$yearId',
+    path: '/app/year/$yearId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppSubjectSubjectIdRoute =
   AuthenticatedAppSubjectSubjectIdRouteImport.update({
     id: '/app/subject/$subjectId',
@@ -124,6 +139,12 @@ const AuthenticatedAppResultAttemptIdRoute =
   AuthenticatedAppResultAttemptIdRouteImport.update({
     id: '/app/result/$attemptId',
     path: '/app/result/$attemptId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAppModuleModuleIdRoute =
+  AuthenticatedAppModuleModuleIdRouteImport.update({
+    id: '/app/module/$moduleId',
+    path: '/app/module/$moduleId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -140,11 +161,14 @@ export interface FileRoutesByFullPath {
   '/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/app/pomodoro': typeof AuthenticatedAppPomodoroRoute
   '/app/quiz': typeof AuthenticatedAppQuizRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
+  '/app/module/$moduleId': typeof AuthenticatedAppModuleModuleIdRoute
   '/app/result/$attemptId': typeof AuthenticatedAppResultAttemptIdRoute
   '/app/subject/$subjectId': typeof AuthenticatedAppSubjectSubjectIdRoute
+  '/app/year/$yearId': typeof AuthenticatedAppYearYearIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -158,11 +182,14 @@ export interface FileRoutesByTo {
   '/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/app/pomodoro': typeof AuthenticatedAppPomodoroRoute
   '/app/quiz': typeof AuthenticatedAppQuizRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
+  '/app/module/$moduleId': typeof AuthenticatedAppModuleModuleIdRoute
   '/app/result/$attemptId': typeof AuthenticatedAppResultAttemptIdRoute
   '/app/subject/$subjectId': typeof AuthenticatedAppSubjectSubjectIdRoute
+  '/app/year/$yearId': typeof AuthenticatedAppYearYearIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -179,11 +206,14 @@ export interface FileRoutesById {
   '/_authenticated/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/_authenticated/app/history': typeof AuthenticatedAppHistoryRoute
   '/_authenticated/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/_authenticated/app/pomodoro': typeof AuthenticatedAppPomodoroRoute
   '/_authenticated/app/quiz': typeof AuthenticatedAppQuizRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
+  '/_authenticated/app/module/$moduleId': typeof AuthenticatedAppModuleModuleIdRoute
   '/_authenticated/app/result/$attemptId': typeof AuthenticatedAppResultAttemptIdRoute
   '/_authenticated/app/subject/$subjectId': typeof AuthenticatedAppSubjectSubjectIdRoute
+  '/_authenticated/app/year/$yearId': typeof AuthenticatedAppYearYearIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -200,11 +230,14 @@ export interface FileRouteTypes {
     | '/app/highlights'
     | '/app/history'
     | '/app/leaderboard'
+    | '/app/pomodoro'
     | '/app/quiz'
     | '/admin/'
     | '/app/'
+    | '/app/module/$moduleId'
     | '/app/result/$attemptId'
     | '/app/subject/$subjectId'
+    | '/app/year/$yearId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -218,11 +251,14 @@ export interface FileRouteTypes {
     | '/app/highlights'
     | '/app/history'
     | '/app/leaderboard'
+    | '/app/pomodoro'
     | '/app/quiz'
     | '/admin'
     | '/app'
+    | '/app/module/$moduleId'
     | '/app/result/$attemptId'
     | '/app/subject/$subjectId'
+    | '/app/year/$yearId'
   id:
     | '__root__'
     | '/'
@@ -238,11 +274,14 @@ export interface FileRouteTypes {
     | '/_authenticated/app/highlights'
     | '/_authenticated/app/history'
     | '/_authenticated/app/leaderboard'
+    | '/_authenticated/app/pomodoro'
     | '/_authenticated/app/quiz'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
+    | '/_authenticated/app/module/$moduleId'
     | '/_authenticated/app/result/$attemptId'
     | '/_authenticated/app/subject/$subjectId'
+    | '/_authenticated/app/year/$yearId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -300,6 +339,13 @@ declare module '@tanstack/react-router' {
       path: '/app/quiz'
       fullPath: '/app/quiz'
       preLoaderRoute: typeof AuthenticatedAppQuizRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/pomodoro': {
+      id: '/_authenticated/app/pomodoro'
+      path: '/app/pomodoro'
+      fullPath: '/app/pomodoro'
+      preLoaderRoute: typeof AuthenticatedAppPomodoroRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app/leaderboard': {
@@ -365,6 +411,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminContentRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/app/year/$yearId': {
+      id: '/_authenticated/app/year/$yearId'
+      path: '/app/year/$yearId'
+      fullPath: '/app/year/$yearId'
+      preLoaderRoute: typeof AuthenticatedAppYearYearIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/app/subject/$subjectId': {
       id: '/_authenticated/app/subject/$subjectId'
       path: '/app/subject/$subjectId'
@@ -377,6 +430,13 @@ declare module '@tanstack/react-router' {
       path: '/app/result/$attemptId'
       fullPath: '/app/result/$attemptId'
       preLoaderRoute: typeof AuthenticatedAppResultAttemptIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/module/$moduleId': {
+      id: '/_authenticated/app/module/$moduleId'
+      path: '/app/module/$moduleId'
+      fullPath: '/app/module/$moduleId'
+      preLoaderRoute: typeof AuthenticatedAppModuleModuleIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -412,10 +472,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppHighlightsRoute: typeof AuthenticatedAppHighlightsRoute
   AuthenticatedAppHistoryRoute: typeof AuthenticatedAppHistoryRoute
   AuthenticatedAppLeaderboardRoute: typeof AuthenticatedAppLeaderboardRoute
+  AuthenticatedAppPomodoroRoute: typeof AuthenticatedAppPomodoroRoute
   AuthenticatedAppQuizRoute: typeof AuthenticatedAppQuizRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+  AuthenticatedAppModuleModuleIdRoute: typeof AuthenticatedAppModuleModuleIdRoute
   AuthenticatedAppResultAttemptIdRoute: typeof AuthenticatedAppResultAttemptIdRoute
   AuthenticatedAppSubjectSubjectIdRoute: typeof AuthenticatedAppSubjectSubjectIdRoute
+  AuthenticatedAppYearYearIdRoute: typeof AuthenticatedAppYearYearIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -424,10 +487,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppHighlightsRoute: AuthenticatedAppHighlightsRoute,
   AuthenticatedAppHistoryRoute: AuthenticatedAppHistoryRoute,
   AuthenticatedAppLeaderboardRoute: AuthenticatedAppLeaderboardRoute,
+  AuthenticatedAppPomodoroRoute: AuthenticatedAppPomodoroRoute,
   AuthenticatedAppQuizRoute: AuthenticatedAppQuizRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+  AuthenticatedAppModuleModuleIdRoute: AuthenticatedAppModuleModuleIdRoute,
   AuthenticatedAppResultAttemptIdRoute: AuthenticatedAppResultAttemptIdRoute,
   AuthenticatedAppSubjectSubjectIdRoute: AuthenticatedAppSubjectSubjectIdRoute,
+  AuthenticatedAppYearYearIdRoute: AuthenticatedAppYearYearIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
