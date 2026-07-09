@@ -92,22 +92,40 @@
 
 .light {
   --background: oklch(0.99 0.003 250);
-  --foreground: oklch(0.15 0.02 260);
+  --foreground: oklch(0.18 0.02 260);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.02 260);
+  --card-foreground: oklch(0.18 0.02 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.02 260);
-  --primary: oklch(0.55 0.16 200);
+  --popover-foreground: oklch(0.18 0.02 260);
+  --primary: oklch(0.52 0.16 220);
   --primary-foreground: oklch(0.99 0.003 250);
   --secondary: oklch(0.96 0.005 250);
   --secondary-foreground: oklch(0.2 0.02 260);
   --muted: oklch(0.96 0.005 250);
-  --muted-foreground: oklch(0.5 0.02 260);
-  --accent: oklch(0.94 0.01 250);
-  --accent-foreground: oklch(0.2 0.02 260);
-  --border: oklch(0.9 0.005 250);
+  --muted-foreground: oklch(0.45 0.02 260);
+  /* Accent must be a real color — icons use text-accent on card backgrounds */
+  --accent: oklch(0.58 0.16 200);
+  --accent-foreground: oklch(0.99 0.003 250);
+  --destructive: oklch(0.58 0.22 22);
+  --destructive-foreground: oklch(0.99 0.003 250);
+  --success: oklch(0.55 0.16 160);
+  --success-foreground: oklch(0.99 0.003 250);
+  --warning: oklch(0.62 0.17 75);
+  --warning-foreground: oklch(0.15 0.02 260);
+  --border: oklch(0.88 0.008 250);
   --input: oklch(0.92 0.005 250);
-  --ring: oklch(0.55 0.16 200);
+  --ring: oklch(0.52 0.16 220);
+  --sidebar: oklch(0.97 0.006 250);
+  --sidebar-foreground: oklch(0.2 0.02 260);
+  --sidebar-primary: oklch(0.52 0.16 220);
+  --sidebar-primary-foreground: oklch(0.99 0.003 250);
+  --sidebar-accent: oklch(0.93 0.012 220);
+  --sidebar-accent-foreground: oklch(0.2 0.02 260);
+  --sidebar-border: oklch(0.88 0.008 250);
+  --sidebar-ring: oklch(0.52 0.16 220);
+  --gradient-hero: radial-gradient(ellipse at top left, oklch(0.52 0.16 220 / 0.12), transparent 55%), radial-gradient(ellipse at bottom right, oklch(0.58 0.16 200 / 0.10), transparent 55%), linear-gradient(180deg, oklch(0.99 0.003 250), oklch(0.97 0.006 250));
+  --gradient-neon: linear-gradient(135deg, oklch(0.58 0.16 200), oklch(0.52 0.16 220) 55%, oklch(0.55 0.16 160));
+  --shadow-elegant: 0 12px 40px -14px oklch(0.4 0.05 250 / 0.25);
 }
 
 @layer base {
