@@ -1,12 +1,13 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Home, LogOut, Settings, Stethoscope, Star, History, Trophy, Timer,
+  Home, LogOut, Settings, Stethoscope, Star, History, Trophy, Timer, Phone,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { CallUsDialog } from "@/components/call-us-dialog";
 import { useStudyHeartbeat } from "@/hooks/use-study-heartbeat";
 
 const studentLinks = [
@@ -20,6 +21,7 @@ const studentLinks = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   useStudyHeartbeat();
+  const [callOpen, setCallOpen] = useState(false);
   const navigate = useNavigate();
   const { data: isAdmin } = useQuery({
     queryKey: ["is_admin"],
@@ -72,17 +74,27 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </nav>
 
-        <div className="mt-4 flex items-center justify-between gap-2">
-          <button onClick={logout} className="flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition hover:bg-sidebar-accent">
-            <LogOut className="h-4 w-4" /> Sign out
+        <div className="mt-4 flex flex-col gap-2">
+          <button
+            onClick={() => setCallOpen(true)}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition hover:bg-sidebar-accent"
+          >
+            <Phone className="h-4 w-4" /> Call Us
           </button>
-          <ThemeToggle />
+          <div className="flex items-center justify-between gap-2">
+            <button onClick={logout} className="flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition hover:bg-sidebar-accent">
+              <LogOut className="h-4 w-4" /> Sign out
+            </button>
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 
       <main className="flex-1 overflow-x-hidden">
         <div className="mx-auto max-w-6xl p-4 sm:p-8">{children}</div>
       </main>
+
+      <CallUsDialog open={callOpen} onClose={() => setCallOpen(false)} />
     </div>
   );
 }
