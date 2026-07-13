@@ -343,7 +343,8 @@ function UploadPage() {
       )}
 
       {rows.length > 0 && (
-        <div className="mt-8">
+        <div id="parse-preview" className="mt-8 scroll-mt-24">
+          <div className="mb-2 text-xs text-muted-foreground">Preview ({rows.length} rows in state)</div>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div className="text-sm">
               <span className="font-semibold">{rows.length}</span> parsed ·{" "}
