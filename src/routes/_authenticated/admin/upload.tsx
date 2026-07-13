@@ -297,6 +297,8 @@ function UploadPage() {
 
   const validCount = rows.filter((r) => r.valid).length;
   const invalidCount = rows.length - validCount;
+  console.log("[upload] RENDER rows.length =", rows.length, "valid =", validCount);
+
 
   return (
     <AdminShell>
