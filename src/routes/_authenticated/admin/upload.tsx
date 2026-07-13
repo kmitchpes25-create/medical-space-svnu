@@ -192,11 +192,20 @@ function UploadPage() {
       }
       if (!text.trim()) throw new Error("No text found");
       addLog(`Parsing ${text.length.toLocaleString()} chars with local rule-based parser…`);
+      console.log("[upload] RAW TEXT sample:", text.slice(0, 300));
       const parsed = parseQuestions(text);
+      console.log("[upload] PARSED rows:", parsed.length, parsed);
       addLog(`Parsed ${parsed.length} candidates (${parsed.filter((r) => r.valid).length} valid, ${parsed.filter((r) => !r.valid).length} invalid)`);
       setRows(parsed);
+      console.log("[upload] setRows called with", parsed.length, "rows");
       if (!parsed.length) toast.warning("No questions detected");
       else toast.success(`Parsed ${parsed.length} questions — review & Save All`);
+      // Scroll preview into view so users see the table right away
+      setTimeout(() => {
+        const el = document.getElementById("parse-preview");
+        console.log("[upload] preview element found?", !!el);
+        el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 60);
     } catch (e: any) {
       const msg = e?.message || "Parse failed";
       addLog(`ERROR: ${msg}`);
@@ -288,6 +297,8 @@ function UploadPage() {
 
   const validCount = rows.filter((r) => r.valid).length;
   const invalidCount = rows.length - validCount;
+  console.log("[upload] RENDER rows.length =", rows.length, "valid =", validCount);
+
 
   return (
     <AdminShell>
@@ -334,7 +345,8 @@ function UploadPage() {
       )}
 
       {rows.length > 0 && (
-        <div className="mt-8">
+        <div id="parse-preview" className="mt-8 scroll-mt-24">
+          <div className="mb-2 text-xs text-muted-foreground">Preview ({rows.length} rows in state)</div>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div className="text-sm">
               <span className="font-semibold">{rows.length}</span> parsed ·{" "}
