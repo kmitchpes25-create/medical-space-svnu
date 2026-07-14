@@ -44,6 +44,24 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: []
+      }
       chapters: {
         Row: {
           created_at: string
@@ -360,6 +378,8 @@ export type Database = {
           deleted_at: string | null
           description: string | null
           id: string
+          lecture_summary_link: string | null
+          lecture_transcript_link: string | null
           name: string
           name_ar: string | null
           order_index: number
@@ -372,6 +392,8 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           id?: string
+          lecture_summary_link?: string | null
+          lecture_transcript_link?: string | null
           name: string
           name_ar?: string | null
           order_index?: number
@@ -384,6 +406,8 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           id?: string
+          lecture_summary_link?: string | null
+          lecture_transcript_link?: string | null
           name?: string
           name_ar?: string | null
           order_index?: number
