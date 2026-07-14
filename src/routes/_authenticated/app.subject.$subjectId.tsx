@@ -19,7 +19,7 @@ function SubjectPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("subjects")
-        .select("id, name, description, sections(id, name, kind, order_index, deleted_at, lectures(id, name, order_index, deleted_at))")
+        .select("id, name, description, sections(id, name, kind, order_index, deleted_at, lectures(id, name, order_index, deleted_at, lecture_summary_link, lecture_transcript_link))")
         .eq("id", subjectId)
         .is("deleted_at", null)
         .maybeSingle();
