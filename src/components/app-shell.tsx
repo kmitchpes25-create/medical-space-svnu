@@ -34,6 +34,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     },
   });
 
+  const { data: telegramLink } = useQuery({
+    queryKey: ["telegram_channel_link"],
+    queryFn: async () => {
+      const { data } = await supabase.from("app_settings" as any).select("value").eq("key", "telegram_channel_link").maybeSingle();
+      const v = (data as any)?.value?.trim();
+      return v || null;
+    },
+  });
+
   const logout = async () => {
     await supabase.auth.signOut();
     toast.success("Signed out");
