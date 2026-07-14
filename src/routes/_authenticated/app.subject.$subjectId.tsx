@@ -104,19 +104,43 @@ function SubjectPage() {
                   <p className="px-2 py-3 text-sm text-muted-foreground">No lectures yet</p>
                 ) : (
                   <ul className="space-y-1">
-                    {lectures.map((lec: any) => (
-                      <li key={lec.id} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-accent">
-                        <span className="flex items-center gap-2 text-sm">
-                          <BookOpen className="h-3.5 w-3.5 text-muted-foreground" /> {lec.name}
-                        </span>
-                        <button
-                          onClick={() => startQuiz({ lecture_id: lec.id, title: `${subject?.name} · ${lec.name}` })}
-                          className="flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
-                        >
-                          <Play className="h-3 w-3" /> Start
-                        </button>
-                      </li>
-                    ))}
+                    {lectures.map((lec: any) => {
+                      const hasSummary = !!lec.lecture_summary_link;
+                      const hasTranscript = !!lec.lecture_transcript_link;
+                      const hasFiles = hasSummary || hasTranscript;
+                      return (
+                        <li key={lec.id} className="rounded-lg px-3 py-2 hover:bg-accent">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-2 text-sm">
+                              <BookOpen className="h-3.5 w-3.5 text-muted-foreground" /> {lec.name}
+                            </span>
+                            <button
+                              onClick={() => startQuiz({ lecture_id: lec.id, title: `${subject?.name} · ${lec.name}` })}
+                              className="flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                            >
+                              <Play className="h-3 w-3" /> Start
+                            </button>
+                          </div>
+                          {hasFiles && (
+                            <div className="mt-2 flex flex-wrap items-center gap-2 pl-6">
+                              <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Lecture Files</span>
+                              {hasSummary && (
+                                <a href={lec.lecture_summary_link} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded-md border border-border bg-background/60 px-2 py-1 text-xs font-medium hover:border-primary hover:text-primary">
+                                  <FileText className="h-3 w-3" /> Summary
+                                </a>
+                              )}
+                              {hasTranscript && (
+                                <a href={lec.lecture_transcript_link} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded-md border border-border bg-background/60 px-2 py-1 text-xs font-medium hover:border-primary hover:text-primary">
+                                  <ScrollText className="h-3 w-3" /> Transcript
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
