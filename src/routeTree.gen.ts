@@ -23,6 +23,7 @@ import { Route as AuthenticatedAppHighlightsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppFavoritesRouteImport } from './routes/_authenticated/app.favorites'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminUploadRouteImport } from './routes/_authenticated/admin/upload'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedAdminRecoveryRouteImport } from './routes/_authenticated/admin/recovery'
 import { Route as AuthenticatedAdminQuestionsRouteImport } from './routes/_authenticated/admin/questions'
 import { Route as AuthenticatedAdminContentRouteImport } from './routes/_authenticated/admin/content'
@@ -105,6 +106,12 @@ const AuthenticatedAdminUploadRoute =
     path: '/upload',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminRecoveryRoute =
   AuthenticatedAdminRecoveryRouteImport.update({
     id: '/recovery',
@@ -155,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/admin/content': typeof AuthenticatedAdminContentRoute
   '/admin/questions': typeof AuthenticatedAdminQuestionsRoute
   '/admin/recovery': typeof AuthenticatedAdminRecoveryRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/app/favorites': typeof AuthenticatedAppFavoritesRoute
@@ -176,6 +184,7 @@ export interface FileRoutesByTo {
   '/admin/content': typeof AuthenticatedAdminContentRoute
   '/admin/questions': typeof AuthenticatedAdminQuestionsRoute
   '/admin/recovery': typeof AuthenticatedAdminRecoveryRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/app/favorites': typeof AuthenticatedAppFavoritesRoute
@@ -200,6 +209,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/content': typeof AuthenticatedAdminContentRoute
   '/_authenticated/admin/questions': typeof AuthenticatedAdminQuestionsRoute
   '/_authenticated/admin/recovery': typeof AuthenticatedAdminRecoveryRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/upload': typeof AuthenticatedAdminUploadRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/app/favorites': typeof AuthenticatedAppFavoritesRoute
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/questions'
     | '/admin/recovery'
+    | '/admin/settings'
     | '/admin/upload'
     | '/admin/users'
     | '/app/favorites'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/questions'
     | '/admin/recovery'
+    | '/admin/settings'
     | '/admin/upload'
     | '/admin/users'
     | '/app/favorites'
@@ -268,6 +280,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/content'
     | '/_authenticated/admin/questions'
     | '/_authenticated/admin/recovery'
+    | '/_authenticated/admin/settings'
     | '/_authenticated/admin/upload'
     | '/_authenticated/admin/users'
     | '/_authenticated/app/favorites'
@@ -390,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUploadRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/recovery': {
       id: '/_authenticated/admin/recovery'
       path: '/recovery'
@@ -446,6 +466,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminContentRoute: typeof AuthenticatedAdminContentRoute
   AuthenticatedAdminQuestionsRoute: typeof AuthenticatedAdminQuestionsRoute
   AuthenticatedAdminRecoveryRoute: typeof AuthenticatedAdminRecoveryRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminUploadRoute: typeof AuthenticatedAdminUploadRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -456,6 +477,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminContentRoute: AuthenticatedAdminContentRoute,
     AuthenticatedAdminQuestionsRoute: AuthenticatedAdminQuestionsRoute,
     AuthenticatedAdminRecoveryRoute: AuthenticatedAdminRecoveryRoute,
+    AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
     AuthenticatedAdminUploadRoute: AuthenticatedAdminUploadRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
