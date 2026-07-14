@@ -47,7 +47,7 @@ function ContentTree() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("academic_years")
-        .select("id, name, order_index, deleted_at, semesters(id, name, order_index, deleted_at, year_id, subjects(id, name, order_index, deleted_at, semester_id, sections(id, name, kind, order_index, deleted_at, subject_id, lectures(id, name, order_index, deleted_at, section_id))))")
+        .select("id, name, order_index, deleted_at, semesters(id, name, order_index, deleted_at, year_id, subjects(id, name, order_index, deleted_at, semester_id, sections(id, name, kind, order_index, deleted_at, subject_id, lectures(id, name, order_index, deleted_at, section_id, lecture_summary_link, lecture_transcript_link))))")
         .is("deleted_at", null)
         .order("order_index");
       if (error) throw error;
@@ -272,6 +272,8 @@ function EditDialog({ state, onClose, onSaved }: any) {
   const { level, row, parentId } = state;
   const [name, setName] = useState(row?.name || "");
   const [kind, setKind] = useState(row?.kind || "custom");
+  const [summaryLink, setSummaryLink] = useState(row?.lecture_summary_link || "");
+  const [transcriptLink, setTranscriptLink] = useState(row?.lecture_transcript_link || "");
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
@@ -281,6 +283,10 @@ function EditDialog({ state, onClose, onSaved }: any) {
       const parentCol = PARENT_COL[level as Level];
       const payload: any = { name };
       if (level === "sections") payload.kind = kind;
+      if (level === "lectures") {
+        payload.lecture_summary_link = summaryLink.trim() || null;
+        payload.lecture_transcript_link = transcriptLink.trim() || null;
+      }
       if (row) {
         const { error } = await supabase.from(level).update(payload).eq("id", row.id);
         if (error) throw error;
@@ -305,6 +311,18 @@ function EditDialog({ state, onClose, onSaved }: any) {
             <select value={kind} onChange={(e) => setKind(e.target.value)} className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm">
               {SECTION_KINDS.map(k => <option key={k} value={k}>{k}</option>)}
             </select>
+          )}
+          {level === "lectures" && (
+            <>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">Lecture Summary Telegram Link</label>
+                <input value={summaryLink} onChange={(e) => setSummaryLink(e.target.value)} placeholder="https://t.me/..." className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">Lecture Transcript Telegram Link</label>
+                <input value={transcriptLink} onChange={(e) => setTranscriptLink(e.target.value)} placeholder="https://t.me/..." className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
+              </div>
+            </>
           )}
         </div>
         <div className="mt-6 flex justify-end gap-2">

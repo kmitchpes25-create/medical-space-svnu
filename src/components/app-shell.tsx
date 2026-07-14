@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Home, LogOut, Settings, Stethoscope, Star, History, Trophy, Timer, Phone,
+  Home, LogOut, Settings, Stethoscope, Star, History, Trophy, Timer, Phone, Send,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -31,6 +31,15 @@ export function AppShell({ children }: { children: ReactNode }) {
       const { data } = await supabase
         .from("user_roles").select("role").eq("user_id", u.user.id).eq("role", "admin").maybeSingle();
       return !!data;
+    },
+  });
+
+  const { data: telegramLink } = useQuery({
+    queryKey: ["telegram_channel_link"],
+    queryFn: async () => {
+      const { data } = await supabase.from("app_settings" as any).select("value").eq("key", "telegram_channel_link").maybeSingle();
+      const v = (data as any)?.value?.trim();
+      return v || null;
     },
   });
 
@@ -75,6 +84,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="mt-4 flex flex-col gap-2">
+          {telegramLink && (
+            <a
+              href={telegramLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition hover:bg-sidebar-accent"
+            >
+              <Send className="h-4 w-4" /> Telegram Channel
+            </a>
+          )}
           <button
             onClick={() => setCallOpen(true)}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition hover:bg-sidebar-accent"
