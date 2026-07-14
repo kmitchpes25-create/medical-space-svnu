@@ -84,6 +84,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="mt-4 flex flex-col gap-2">
+          {telegramLink && (
+            <a
+              href={telegramLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition hover:bg-sidebar-accent"
+            >
+              <Send className="h-4 w-4" /> Telegram Channel
+            </a>
+          )}
           <button
             onClick={() => setCallOpen(true)}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition hover:bg-sidebar-accent"
