@@ -47,7 +47,7 @@ function ContentTree() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("academic_years")
-        .select("id, name, order_index, deleted_at, semesters(id, name, order_index, deleted_at, year_id, subjects(id, name, order_index, deleted_at, semester_id, sections(id, name, kind, order_index, deleted_at, subject_id, lectures(id, name, order_index, deleted_at, section_id))))")
+        .select("id, name, order_index, deleted_at, semesters(id, name, order_index, deleted_at, year_id, subjects(id, name, order_index, deleted_at, semester_id, sections(id, name, kind, order_index, deleted_at, subject_id, lectures(id, name, order_index, deleted_at, section_id, lecture_summary_link, lecture_transcript_link))))")
         .is("deleted_at", null)
         .order("order_index");
       if (error) throw error;
