@@ -378,6 +378,7 @@ export type Database = {
           deleted_at: string | null
           description: string | null
           id: string
+          lecture_recording_link: string | null
           lecture_summary_link: string | null
           lecture_transcript_link: string | null
           name: string
@@ -392,6 +393,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           id?: string
+          lecture_recording_link?: string | null
           lecture_summary_link?: string | null
           lecture_transcript_link?: string | null
           name: string
@@ -406,6 +408,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           id?: string
+          lecture_recording_link?: string | null
           lecture_summary_link?: string | null
           lecture_transcript_link?: string | null
           name?: string
