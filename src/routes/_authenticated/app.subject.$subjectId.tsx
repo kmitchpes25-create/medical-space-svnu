@@ -107,7 +107,8 @@ function SubjectPage() {
                     {lectures.map((lec: any) => {
                       const hasSummary = !!lec.lecture_summary_link;
                       const hasTranscript = !!lec.lecture_transcript_link;
-                      const hasFiles = hasSummary || hasTranscript;
+                      const hasRecording = !!lec.lecture_recording_link;
+                      const hasFiles = hasSummary || hasTranscript || hasRecording;
                       return (
                         <li key={lec.id} className="rounded-lg px-3 py-2 hover:bg-accent">
                           <div className="flex items-center justify-between gap-2">
