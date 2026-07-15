@@ -274,6 +274,7 @@ function EditDialog({ state, onClose, onSaved }: any) {
   const [kind, setKind] = useState(row?.kind || "custom");
   const [summaryLink, setSummaryLink] = useState(row?.lecture_summary_link || "");
   const [transcriptLink, setTranscriptLink] = useState(row?.lecture_transcript_link || "");
+  const [recordingLink, setRecordingLink] = useState(row?.lecture_recording_link || "");
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
