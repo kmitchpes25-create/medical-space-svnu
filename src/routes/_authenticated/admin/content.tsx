@@ -47,7 +47,7 @@ function ContentTree() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("academic_years")
-        .select("id, name, order_index, deleted_at, semesters(id, name, order_index, deleted_at, year_id, subjects(id, name, order_index, deleted_at, semester_id, sections(id, name, kind, order_index, deleted_at, subject_id, lectures(id, name, order_index, deleted_at, section_id, lecture_summary_link, lecture_transcript_link))))")
+        .select("id, name, order_index, deleted_at, semesters(id, name, order_index, deleted_at, year_id, subjects(id, name, order_index, deleted_at, semester_id, sections(id, name, kind, order_index, deleted_at, subject_id, lectures(id, name, order_index, deleted_at, section_id, lecture_summary_link, lecture_transcript_link, lecture_recording_link))))")
         .is("deleted_at", null)
         .order("order_index");
       if (error) throw error;
@@ -274,6 +274,7 @@ function EditDialog({ state, onClose, onSaved }: any) {
   const [kind, setKind] = useState(row?.kind || "custom");
   const [summaryLink, setSummaryLink] = useState(row?.lecture_summary_link || "");
   const [transcriptLink, setTranscriptLink] = useState(row?.lecture_transcript_link || "");
+  const [recordingLink, setRecordingLink] = useState(row?.lecture_recording_link || "");
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
@@ -286,6 +287,7 @@ function EditDialog({ state, onClose, onSaved }: any) {
       if (level === "lectures") {
         payload.lecture_summary_link = summaryLink.trim() || null;
         payload.lecture_transcript_link = transcriptLink.trim() || null;
+        payload.lecture_recording_link = recordingLink.trim() || null;
       }
       if (row) {
         const { error } = await supabase.from(level).update(payload).eq("id", row.id);
@@ -321,6 +323,10 @@ function EditDialog({ state, onClose, onSaved }: any) {
               <div>
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">Lecture Transcript Telegram Link</label>
                 <input value={transcriptLink} onChange={(e) => setTranscriptLink(e.target.value)} placeholder="https://t.me/..." className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">Lecture Recording Telegram Link</label>
+                <input value={recordingLink} onChange={(e) => setRecordingLink(e.target.value)} placeholder="https://t.me/..." className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
               </div>
             </>
           )}

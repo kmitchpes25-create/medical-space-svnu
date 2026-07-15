@@ -1,0 +1,1 @@
+ALTER TABLE public.lectures ADD COLUMN IF NOT EXISTS lecture_recording_link text;

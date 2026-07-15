@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
-import { BookOpen, FolderOpen, Play, FileText, ScrollText } from "lucide-react";
+import { BookOpen, FolderOpen, Play, FileText, ScrollText, Headphones } from "lucide-react";
 import { MistakesSection } from "@/components/mistakes-section";
 import { toast } from "sonner";
 
@@ -19,7 +19,7 @@ function SubjectPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("subjects")
-        .select("id, name, description, sections(id, name, kind, order_index, deleted_at, lectures(id, name, order_index, deleted_at, lecture_summary_link, lecture_transcript_link))")
+        .select("id, name, description, sections(id, name, kind, order_index, deleted_at, lectures(id, name, order_index, deleted_at, lecture_summary_link, lecture_transcript_link, lecture_recording_link))")
         .eq("id", subjectId)
         .is("deleted_at", null)
         .maybeSingle();
@@ -107,7 +107,8 @@ function SubjectPage() {
                     {lectures.map((lec: any) => {
                       const hasSummary = !!lec.lecture_summary_link;
                       const hasTranscript = !!lec.lecture_transcript_link;
-                      const hasFiles = hasSummary || hasTranscript;
+                      const hasRecording = !!lec.lecture_recording_link;
+                      const hasFiles = hasSummary || hasTranscript || hasRecording;
                       return (
                         <li key={lec.id} className="rounded-lg px-3 py-2 hover:bg-accent">
                           <div className="flex items-center justify-between gap-2">
@@ -134,6 +135,12 @@ function SubjectPage() {
                                 <a href={lec.lecture_transcript_link} target="_blank" rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1 rounded-md border border-border bg-background/60 px-2 py-1 text-xs font-medium hover:border-primary hover:text-primary">
                                   <ScrollText className="h-3 w-3" /> Transcript
+                                </a>
+                              )}
+                              {hasRecording && (
+                                <a href={lec.lecture_recording_link} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded-md border border-border bg-background/60 px-2 py-1 text-xs font-medium hover:border-primary hover:text-primary">
+                                  <Headphones className="h-3 w-3" /> Recording
                                 </a>
                               )}
                             </div>
