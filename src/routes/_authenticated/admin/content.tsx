@@ -324,6 +324,10 @@ function EditDialog({ state, onClose, onSaved }: any) {
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">Lecture Transcript Telegram Link</label>
                 <input value={transcriptLink} onChange={(e) => setTranscriptLink(e.target.value)} placeholder="https://t.me/..." className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
               </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">Lecture Recording Telegram Link</label>
+                <input value={recordingLink} onChange={(e) => setRecordingLink(e.target.value)} placeholder="https://t.me/..." className="w-full rounded-lg border border-input bg-input/30 px-3 py-2 text-sm" />
+              </div>
             </>
           )}
         </div>
