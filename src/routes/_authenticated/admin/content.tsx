@@ -287,6 +287,7 @@ function EditDialog({ state, onClose, onSaved }: any) {
       if (level === "lectures") {
         payload.lecture_summary_link = summaryLink.trim() || null;
         payload.lecture_transcript_link = transcriptLink.trim() || null;
+        payload.lecture_recording_link = recordingLink.trim() || null;
       }
       if (row) {
         const { error } = await supabase.from(level).update(payload).eq("id", row.id);
