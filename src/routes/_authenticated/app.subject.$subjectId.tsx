@@ -137,6 +137,12 @@ function SubjectPage() {
                                   <ScrollText className="h-3 w-3" /> Transcript
                                 </a>
                               )}
+                              {hasRecording && (
+                                <a href={lec.lecture_recording_link} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded-md border border-border bg-background/60 px-2 py-1 text-xs font-medium hover:border-primary hover:text-primary">
+                                  <Headphones className="h-3 w-3" /> Recording
+                                </a>
+                              )}
                             </div>
                           )}
                         </li>
