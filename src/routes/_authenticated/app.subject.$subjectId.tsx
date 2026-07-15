@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
-import { BookOpen, FolderOpen, Play, FileText, ScrollText } from "lucide-react";
+import { BookOpen, FolderOpen, Play, FileText, ScrollText, Headphones } from "lucide-react";
 import { MistakesSection } from "@/components/mistakes-section";
 import { toast } from "sonner";
 
