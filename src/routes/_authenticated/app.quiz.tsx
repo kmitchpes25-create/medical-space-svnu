@@ -112,30 +112,16 @@ function QuizPage() {
 
       let correctCount = 0;
       const answerRows: any[] = [];
-      const mistakeRows: any[] = [];
       for (const qq of questions) {
         const sel = answers[qq.id] || [];
         let ok = false;
         if (qq.question_type === "written") {
           ok = sel.includes("__got_it__");
-          answerRows.push({ question_id: qq.id, selected_choice_ids: sel, is_correct: ok });
         } else {
           const g = grades[qq.id];
           ok = !!g?.is_correct;
-          answerRows.push({ question_id: qq.id, selected_choice_ids: sel, is_correct: ok });
-          if (!ok && qq.subject_id) {
-            const wrongTxt = qq.choices.filter(c => sel.includes(c.id)).map(c => c.text).join(" / ") || "(no answer)";
-            mistakeRows.push({
-              user_id: u.user.id,
-              subject_id: qq.subject_id,
-              chapter_id: qq.chapter_id || null,
-              question_id: qq.id,
-              question_text: qq.text,
-              correct_answer: g?.correct_text || "—",
-              wrong_answer: wrongTxt,
-            });
-          }
         }
+        answerRows.push({ question_id: qq.id, selected_choice_ids: sel, is_correct: ok });
         if (ok) correctCount++;
       }
 
@@ -154,9 +140,6 @@ function QuizPage() {
       if (error) throw error;
 
       await supabase.from("exam_answers").insert(answerRows.map(r => ({ ...r, attempt_id: attempt.id })));
-      if (mistakeRows.length) {
-        await supabase.from("mistakes").upsert(mistakeRows, { onConflict: "user_id,question_id" });
-      }
 
       sessionStorage.removeItem("quiz_ids");
       sessionStorage.removeItem("quiz_meta");
