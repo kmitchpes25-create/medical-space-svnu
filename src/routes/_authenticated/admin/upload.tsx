@@ -239,53 +239,40 @@ function UploadPage() {
     if (!valid.length) { toast.error("No valid questions to save"); return; }
     if (!subjectId || !sectionId) { toast.error("Pick a subject & section first"); return; }
     setSaving(true);
-    let imported = 0, skipped = 0;
+    let imported = 0;
     const errors: string[] = [];
     try {
       for (const r of valid) {
         try {
-          const hash = await sha256Hex(r.question);
-          const { data: existing } = await supabase.from("questions").select("id").eq("hash", hash).maybeSingle();
-          let qid: string;
-          if (existing) {
-            qid = existing.id;
-            skipped++;
-          } else {
-            const correctText = (r as any)[r.answer] as string;
-            const { data: inserted, error: qErr } = await supabase.from("questions").insert({
-              subject_id: subjectId,
-              section_id: sectionId,
-              lecture_id: lectureId || null,
-              source_kind: (selectedSection?.kind as string) || "question_bank",
-              question_type: "mcq",
-              text: r.question,
-              explanation: `Correct answer: ${r.answer}. ${correctText}`,
-              hash,
-            } as any).select("id").single();
-            if (qErr || !inserted) { skipped++; errors.push(qErr?.message || "insert failed"); continue; }
-            qid = inserted.id;
-            const choiceRows = (["A", "B", "C", "D"] as const).map((letter, i) => ({
-              question_id: qid,
-              text: (r as any)[letter] as string,
-              is_correct: r.answer === letter,
-              order_index: i,
-            }));
-            const { error: cErr } = await supabase.from("choices").insert(choiceRows);
-            if (cErr) errors.push(`Choices: ${cErr.message}`);
-            imported++;
-          }
+          const correctText = (r as any)[r.answer] as string;
+          const { data: inserted, error: qErr } = await supabase.from("questions").insert({
+            subject_id: subjectId,
+            section_id: sectionId,
+            lecture_id: lectureId || null,
+            source_kind: (selectedSection?.kind as string) || "question_bank",
+            question_type: "mcq",
+            text: r.question,
+            explanation: `Correct answer: ${r.answer}. ${correctText}`,
+          } as any).select("id").single();
+          if (qErr || !inserted) { errors.push(qErr?.message || "insert failed"); continue; }
+          const qid = inserted.id;
+          const choiceRows = (["A", "B", "C", "D"] as const).map((letter, i) => ({
+            question_id: qid,
+            text: (r as any)[letter] as string,
+            is_correct: r.answer === letter,
+            order_index: i,
+          }));
+          const { error: cErr } = await supabase.from("choices").insert(choiceRows);
+          if (cErr) errors.push(`Choices: ${cErr.message}`);
           if (lectureId) {
-            await supabase.from("question_lectures" as any).upsert(
-              { question_id: qid, lecture_id: lectureId },
-              { onConflict: "question_id,lecture_id" } as any,
-            );
+            await supabase.from("question_lectures" as any).insert({ question_id: qid, lecture_id: lectureId });
           }
+          imported++;
         } catch (e: any) {
-          skipped++;
           errors.push(e?.message || "row error");
         }
       }
-      toast.success(`Saved ${imported} new, ${skipped} skipped${errors.length ? ` (${errors.length} warnings)` : ""}`);
+      toast.success(`Saved ${imported} question${imported === 1 ? "" : "s"}${errors.length ? ` (${errors.length} warnings)` : ""}`);
       if (errors.length) console.warn("[upload] save warnings:", errors.slice(0, 10));
       setRows([]);
       setFile(null);

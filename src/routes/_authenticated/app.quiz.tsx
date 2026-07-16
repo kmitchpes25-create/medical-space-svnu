@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { toast } from "sonner";
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, XCircle, PlusCircle } from "lucide-react";
 import { HighlightStar } from "@/components/highlight-star";
 
 export const Route = createFileRoute("/_authenticated/app/quiz")({
@@ -28,6 +28,7 @@ function QuizPage() {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [reveal, setReveal] = useState<Record<string, RevealInfo>>({});
+  const [addedMistakes, setAddedMistakes] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -112,30 +113,16 @@ function QuizPage() {
 
       let correctCount = 0;
       const answerRows: any[] = [];
-      const mistakeRows: any[] = [];
       for (const qq of questions) {
         const sel = answers[qq.id] || [];
         let ok = false;
         if (qq.question_type === "written") {
           ok = sel.includes("__got_it__");
-          answerRows.push({ question_id: qq.id, selected_choice_ids: sel, is_correct: ok });
         } else {
           const g = grades[qq.id];
           ok = !!g?.is_correct;
-          answerRows.push({ question_id: qq.id, selected_choice_ids: sel, is_correct: ok });
-          if (!ok && qq.subject_id) {
-            const wrongTxt = qq.choices.filter(c => sel.includes(c.id)).map(c => c.text).join(" / ") || "(no answer)";
-            mistakeRows.push({
-              user_id: u.user.id,
-              subject_id: qq.subject_id,
-              chapter_id: qq.chapter_id || null,
-              question_id: qq.id,
-              question_text: qq.text,
-              correct_answer: g?.correct_text || "—",
-              wrong_answer: wrongTxt,
-            });
-          }
         }
+        answerRows.push({ question_id: qq.id, selected_choice_ids: sel, is_correct: ok });
         if (ok) correctCount++;
       }
 
@@ -154,9 +141,6 @@ function QuizPage() {
       if (error) throw error;
 
       await supabase.from("exam_answers").insert(answerRows.map(r => ({ ...r, attempt_id: attempt.id })));
-      if (mistakeRows.length) {
-        await supabase.from("mistakes").upsert(mistakeRows, { onConflict: "user_id,question_id" });
-      }
 
       sessionStorage.removeItem("quiz_ids");
       sessionStorage.removeItem("quiz_meta");
@@ -252,6 +236,35 @@ function QuizPage() {
                 {(rev.explanation || q.explanation) && <p className="mt-1 text-muted-foreground">{rev.explanation || q.explanation}</p>}
               </div>
             )}
+
+            {rev && !isCorrect && q.subject_id && (
+              <button
+                onClick={async () => {
+                  if (addedMistakes[q.id]) return;
+                  const { data: u } = await supabase.auth.getUser();
+                  if (!u.user) return;
+                  const wrongTxt = q.choices.filter(c => selected.includes(c.id)).map(c => c.text).join(" / ") || "(no answer)";
+                  const { error } = await supabase.from("mistakes").upsert({
+                    user_id: u.user.id,
+                    subject_id: q.subject_id,
+                    chapter_id: q.chapter_id || null,
+                    question_id: q.id,
+                    question_text: q.text,
+                    correct_answer: rev.correct_text || "—",
+                    wrong_answer: wrongTxt,
+                  }, { onConflict: "user_id,question_id" });
+                  if (error) { toast.error(error.message); return; }
+                  setAddedMistakes(prev => ({ ...prev, [q.id]: true }));
+                  toast.success("Added to Mistakes Quiz");
+                }}
+                disabled={!!addedMistakes[q.id]}
+                className="mt-4 inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-medium text-primary disabled:opacity-60"
+              >
+                <PlusCircle className="h-4 w-4" />
+                {addedMistakes[q.id] ? "Added to Mistakes Quiz" : "Add to Mistakes Quiz"}
+              </button>
+            )}
+
 
             {!rev && isMulti && selected.length > 0 && (
               <button onClick={checkAnswer} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
