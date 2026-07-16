@@ -28,6 +28,7 @@ function QuizPage() {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [reveal, setReveal] = useState<Record<string, RevealInfo>>({});
+  const [addedMistakes, setAddedMistakes] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
