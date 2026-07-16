@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Home, LogOut, Settings, Stethoscope, Star, History, Trophy, Timer, Phone, Send,
+  Home, LogOut, Settings, Stethoscope, Star, History, Trophy, Timer, Phone, Send, Target,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -14,6 +14,7 @@ const studentLinks = [
   { to: "/app", label: "Home", icon: Home },
   { to: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/app/pomodoro", label: "Pomodoro", icon: Timer },
+  { to: "/app/mistakes", label: "Mistakes Quiz", icon: Target },
   { to: "/app/highlights", label: "Highlights", icon: Star },
   { to: "/app/favorites", label: "Favorites", icon: Star },
   { to: "/app/history", label: "My results", icon: History },

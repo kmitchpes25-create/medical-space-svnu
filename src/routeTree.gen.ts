@@ -17,6 +17,7 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAppQuizRouteImport } from './routes/_authenticated/app.quiz'
 import { Route as AuthenticatedAppPomodoroRouteImport } from './routes/_authenticated/app.pomodoro'
+import { Route as AuthenticatedAppMistakesRouteImport } from './routes/_authenticated/app.mistakes'
 import { Route as AuthenticatedAppLeaderboardRouteImport } from './routes/_authenticated/app.leaderboard'
 import { Route as AuthenticatedAppHistoryRouteImport } from './routes/_authenticated/app.history'
 import { Route as AuthenticatedAppHighlightsRouteImport } from './routes/_authenticated/app.highlights'
@@ -70,6 +71,12 @@ const AuthenticatedAppPomodoroRoute =
   AuthenticatedAppPomodoroRouteImport.update({
     id: '/app/pomodoro',
     path: '/app/pomodoro',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAppMistakesRoute =
+  AuthenticatedAppMistakesRouteImport.update({
+    id: '/app/mistakes',
+    path: '/app/mistakes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAppLeaderboardRoute =
@@ -169,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/app/mistakes': typeof AuthenticatedAppMistakesRoute
   '/app/pomodoro': typeof AuthenticatedAppPomodoroRoute
   '/app/quiz': typeof AuthenticatedAppQuizRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -191,6 +199,7 @@ export interface FileRoutesByTo {
   '/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/app/mistakes': typeof AuthenticatedAppMistakesRoute
   '/app/pomodoro': typeof AuthenticatedAppPomodoroRoute
   '/app/quiz': typeof AuthenticatedAppQuizRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -216,6 +225,7 @@ export interface FileRoutesById {
   '/_authenticated/app/highlights': typeof AuthenticatedAppHighlightsRoute
   '/_authenticated/app/history': typeof AuthenticatedAppHistoryRoute
   '/_authenticated/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/_authenticated/app/mistakes': typeof AuthenticatedAppMistakesRoute
   '/_authenticated/app/pomodoro': typeof AuthenticatedAppPomodoroRoute
   '/_authenticated/app/quiz': typeof AuthenticatedAppQuizRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/app/highlights'
     | '/app/history'
     | '/app/leaderboard'
+    | '/app/mistakes'
     | '/app/pomodoro'
     | '/app/quiz'
     | '/admin/'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/app/highlights'
     | '/app/history'
     | '/app/leaderboard'
+    | '/app/mistakes'
     | '/app/pomodoro'
     | '/app/quiz'
     | '/admin'
@@ -287,6 +299,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/highlights'
     | '/_authenticated/app/history'
     | '/_authenticated/app/leaderboard'
+    | '/_authenticated/app/mistakes'
     | '/_authenticated/app/pomodoro'
     | '/_authenticated/app/quiz'
     | '/_authenticated/admin/'
@@ -359,6 +372,13 @@ declare module '@tanstack/react-router' {
       path: '/app/pomodoro'
       fullPath: '/app/pomodoro'
       preLoaderRoute: typeof AuthenticatedAppPomodoroRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/mistakes': {
+      id: '/_authenticated/app/mistakes'
+      path: '/app/mistakes'
+      fullPath: '/app/mistakes'
+      preLoaderRoute: typeof AuthenticatedAppMistakesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app/leaderboard': {
@@ -494,6 +514,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppHighlightsRoute: typeof AuthenticatedAppHighlightsRoute
   AuthenticatedAppHistoryRoute: typeof AuthenticatedAppHistoryRoute
   AuthenticatedAppLeaderboardRoute: typeof AuthenticatedAppLeaderboardRoute
+  AuthenticatedAppMistakesRoute: typeof AuthenticatedAppMistakesRoute
   AuthenticatedAppPomodoroRoute: typeof AuthenticatedAppPomodoroRoute
   AuthenticatedAppQuizRoute: typeof AuthenticatedAppQuizRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
@@ -509,6 +530,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppHighlightsRoute: AuthenticatedAppHighlightsRoute,
   AuthenticatedAppHistoryRoute: AuthenticatedAppHistoryRoute,
   AuthenticatedAppLeaderboardRoute: AuthenticatedAppLeaderboardRoute,
+  AuthenticatedAppMistakesRoute: AuthenticatedAppMistakesRoute,
   AuthenticatedAppPomodoroRoute: AuthenticatedAppPomodoroRoute,
   AuthenticatedAppQuizRoute: AuthenticatedAppQuizRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
