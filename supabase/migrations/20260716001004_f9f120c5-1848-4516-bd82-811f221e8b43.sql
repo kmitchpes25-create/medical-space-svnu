@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS public.ux_question_hash;
