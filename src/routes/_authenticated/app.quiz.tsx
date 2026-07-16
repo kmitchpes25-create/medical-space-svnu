@@ -237,6 +237,35 @@ function QuizPage() {
               </div>
             )}
 
+            {rev && !isCorrect && q.subject_id && (
+              <button
+                onClick={async () => {
+                  if (addedMistakes[q.id]) return;
+                  const { data: u } = await supabase.auth.getUser();
+                  if (!u.user) return;
+                  const wrongTxt = q.choices.filter(c => selected.includes(c.id)).map(c => c.text).join(" / ") || "(no answer)";
+                  const { error } = await supabase.from("mistakes").upsert({
+                    user_id: u.user.id,
+                    subject_id: q.subject_id,
+                    chapter_id: q.chapter_id || null,
+                    question_id: q.id,
+                    question_text: q.text,
+                    correct_answer: rev.correct_text || "—",
+                    wrong_answer: wrongTxt,
+                  }, { onConflict: "user_id,question_id" });
+                  if (error) { toast.error(error.message); return; }
+                  setAddedMistakes(prev => ({ ...prev, [q.id]: true }));
+                  toast.success("Added to Mistakes Quiz");
+                }}
+                disabled={!!addedMistakes[q.id]}
+                className="mt-4 inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-medium text-primary disabled:opacity-60"
+              >
+                <PlusCircle className="h-4 w-4" />
+                {addedMistakes[q.id] ? "Added to Mistakes Quiz" : "Add to Mistakes Quiz"}
+              </button>
+            )}
+
+
             {!rev && isMulti && selected.length > 0 && (
               <button onClick={checkAnswer} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
                 Check answer
